@@ -1,0 +1,11 @@
+{
+    "theme_style": "Dark",
+    "primary_palette": "Blue",
+    "alpha": [
+        1
+    ],
+    "mark": "imgs/Blue.png",
+    "car": "imgs/Blue-car.png",
+    "drawer": "left",
+    "plate": "XX ABCD YY"
+}
