@@ -4,10 +4,10 @@
 title = Car locator
 
 # (str) Package name
-package.name = Car locator
+package.name = locator
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = org.locator
 
 # (str) Source code where the main.py live
 source.dir = .

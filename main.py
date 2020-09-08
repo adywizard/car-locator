@@ -73,6 +73,9 @@ KV = """
 
 
 <PltContent>:
+    Widget:
+        size_hint_y: None
+        height: dp(40)
     MDTextField:
         id: txt_field
         pos_hint: {'center_x': .5, 'center_y': .5}
@@ -176,7 +179,7 @@ KV = """
     orientation: "vertical"
 
     MDFloatLayout:
-        size_hint_y: .2
+        size_hint_y: .3
         md_bg_color: app.theme_cls.bg_light
 
         Image:
@@ -298,7 +301,6 @@ KV = """
                             md_bg_color: app.theme_cls.primary_color[:3]\
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .65}
-                            size_hint: .55, .055
                             on_release:
                                 # sm.current = 'scr 4'
                                 app.turn_on_gps()
@@ -311,7 +313,6 @@ KV = """
                             md_bg_color: app.theme_cls.primary_color[:3]\
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .55}
-                            size_hint: .55, .055
                             on_release:
                                 app.accur.clear()
                                 app.lat_lon.clear()
@@ -326,7 +327,6 @@ KV = """
                             md_bg_color: app.theme_cls.primary_color[:3]\
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .45}
-                            size_hint: .55, .055
                             on_release:
                                 app.add_mark(app.loca[0], app.loca[1])\
                                     if app.loca else None
@@ -342,7 +342,6 @@ KV = """
                             md_bg_color: app.theme_cls.primary_color[:3]\
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .35}
-                            size_hint: .55, .055
                             on_release:
                                 sm.current = 'scr 3'
 
@@ -394,7 +393,7 @@ KV = """
                 MDBoxLayout:
                     orientation: 'vertical'
                     MDToolbar:
-                        title: 'Place cronology'
+                        title: 'Cronology'
                         elevation: 10
                         left_action_items:
                             [['menu', lambda x: nav_drawer.set_state()]]
@@ -474,20 +473,20 @@ class RootWidget(Screen):
     wy13 = NumericProperty(randint(10, Window.height))
     wx14 = NumericProperty(randint(10, Window.width))
     wy14 = NumericProperty(randint(10, Window.height))
-    r1 = NumericProperty(randint(10, Window.height//4))
-    r2 = NumericProperty(randint(10, Window.height//4))
-    r3 = NumericProperty(randint(10, Window.height//4))
-    r4 = NumericProperty(randint(10, Window.height//4))
-    r5 = NumericProperty(randint(10, Window.height//4))
-    r6 = NumericProperty(randint(10, Window.height//4))
-    r7 = NumericProperty(randint(10, Window.height//4))
-    r8 = NumericProperty(randint(10, Window.height//4))
-    r9 = NumericProperty(randint(10, Window.height//4))
-    r10 = NumericProperty(randint(10, Window.height//4))
-    r11 = NumericProperty(randint(10, Window.height//4))
-    r12 = NumericProperty(randint(10, Window.height//4))
-    r13 = NumericProperty(randint(10, Window.height//4))
-    r14 = NumericProperty(randint(10, Window.height//4))
+    r1 = NumericProperty(randint(10, Window.height//6))
+    r2 = NumericProperty(randint(10, Window.height//6))
+    r3 = NumericProperty(randint(10, Window.height//6))
+    r4 = NumericProperty(randint(10, Window.height//6))
+    r5 = NumericProperty(randint(10, Window.height//6))
+    r6 = NumericProperty(randint(10, Window.height//6))
+    r7 = NumericProperty(randint(10, Window.height//6))
+    r8 = NumericProperty(randint(10, Window.height//6))
+    r9 = NumericProperty(randint(10, Window.height//6))
+    r10 = NumericProperty(randint(10, Window.height//6))
+    r11 = NumericProperty(randint(10, Window.height//6))
+    r12 = NumericProperty(randint(10, Window.height//6))
+    r13 = NumericProperty(randint(10, Window.height//6))
+    r14 = NumericProperty(randint(10, Window.height//6))
 
 
 class SwipeToDeleteItem(MDCardSwipe):
@@ -520,7 +519,6 @@ class ItemConfirm(OneLineAvatarIconListItem):
 
 
 class ItemColor(OneLineAvatarIconListItem):
-    # divider = None
 
     def set_icon(self, instance_check):
         instance_check.active = True
@@ -569,6 +567,7 @@ class DrawerList(ThemableBehavior, MDList):
                 app.theme_cls.theme_style = 'Dark'
                 app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
             app.save_theme()
+
 
 class CarPos(MDApp):
 
@@ -795,9 +794,7 @@ class CarPos(MDApp):
         self.get_last_location()
         self.create_history()
         self.configure_gps()
-        # self.color_animation()
         self.size_animation_one()
-        # Clock.schedule_once(self.open_gps_settings, 1)
 
     def on_pause(self):
         try:
@@ -906,98 +903,98 @@ class CarPos(MDApp):
     def size_animation_one(self, *_):
         self.anim_size = Animation(
             wx1=randint(0, int(self.w)), wy1=randint(0, int(self.h)),
-            r1=randint(10, Window.height//4), d=5, t='in_bounce')
+            r1=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_two)
         self.anim_size.start(self.root)
 
     def size_animation_two(self, ani, wid):
         self.anim_size = Animation(
             wx2=randint(0, int(self.w)), wy2=randint(0, int(self.h)),
-            r2=randint(10, Window.height//4), d=5, t='in_bounce')
+            r2=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_three)
         self.anim_size.start(self.root)
 
     def size_animation_three(self, ani, wid):
         self.anim_size = Animation(
             wx3=randint(0, int(self.w)), wy3=randint(0, int(self.h)),
-            r3=randint(10, Window.height//4), d=5, t='in_bounce')
+            r3=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_four)
         self.anim_size.start(self.root)
 
     def size_animation_four(self, ani, wid):
         self.anim_size = Animation(
             wx4=randint(0, int(self.w)), wy4=randint(0, int(self.h)),
-            r4=randint(10, Window.height//4), d=5, t='in_bounce')
+            r4=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_five)
         self.anim_size.start(self.root)
 
     def size_animation_five(self, ani, wid):
         self.anim_size = Animation(
             wx5=randint(0, int(self.w)), wy5=randint(0, int(self.h)),
-            r5=randint(10, Window.height//4), d=5, t='in_bounce')
+            r5=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_six)
         self.anim_size.start(self.root)
 
     def size_animation_six(self, ani, wid):
         self.anim_size = Animation(
             wx6=randint(0, int(self.w)), wy6=randint(0, int(self.h)),
-            r6=randint(10, Window.height//4), d=5, t='in_bounce')
+            r6=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_seven)
         self.anim_size.start(self.root)
 
     def size_animation_seven(self, ani, wid):
         self.anim_size = Animation(
             wx7=randint(0, int(self.w)), wy7=randint(0, int(self.h)),
-            r7=randint(10, Window.height//4), d=5, t='in_bounce')
+            r7=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_eight)
         self.anim_size.start(self.root)
 
     def size_animation_eight(self, ani, wid):
         self.anim_size = Animation(
             wx8=randint(0, int(self.w)), wy8=randint(0, int(self.h)),
-            r8=randint(10, Window.height//4), d=5, t='in_bounce')
+            r8=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_nine)
         self.anim_size.start(self.root)
 
     def size_animation_nine(self, ani, wid):
         self.anim_size = Animation(
             wx9=randint(0, int(self.w)), wy9=randint(0, int(self.h)),
-            r9=randint(10, Window.height//4), d=5, t='in_bounce')
+            r9=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_ten)
         self.anim_size.start(self.root)
 
     def size_animation_ten(self, ani, wid):
         self.anim_size = Animation(
             wx10=randint(0, int(self.w)), wy10=randint(0, int(self.h)),
-            r10=randint(10, Window.height//4), d=5, t='in_bounce')
+            r10=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_eleven)
         self.anim_size.start(self.root)
 
     def size_animation_eleven(self, ani, wid):
         self.anim_size = Animation(
             wx11=randint(0, int(self.w)), wy11=randint(0, int(self.h)),
-            r11=randint(10, Window.height//4), d=5, t='in_bounce')
+            r11=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_twelve)
         self.anim_size.start(self.root)
 
     def size_animation_twelve(self, ani, wid):
         self.anim_size = Animation(
             wx12=randint(0, int(self.w)), wy12=randint(0, int(self.h)),
-            r12=randint(10, Window.height//4), d=5, t='in_bounce')
+            r12=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_thirteen)
         self.anim_size.start(self.root)
 
     def size_animation_thirteen(self, ani, wid):
         self.anim_size = Animation(
             wx13=randint(0, int(self.w)), wy13=randint(0, int(self.h)),
-            r13=randint(10, Window.height//4), d=5, t='in_bounce')
+            r13=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_fourteen)
         self.anim_size.start(self.root)
 
     def size_animation_fourteen(self, ani, wid):
         self.anim_size = Animation(
             wx14=randint(0, int(self.w)), wy14=randint(0, int(self.h)),
-            r14=randint(10, Window.height//4), d=5, t='in_bounce')
+            r14=randint(10, Window.height//6), d=5, t='in_bounce')
         self.anim_size.bind(on_complete=self.size_animation_one)
         self.anim_size.start(self.root)
 
@@ -1009,7 +1006,7 @@ class CarPos(MDApp):
     def create_dialogs(self):
         if not self.map_dialog:
             self.map_dialog = MDDialog(
-                title='HOW DO YOU GO THERE?',
+                title='How do you go there?',
                 type='confirmation',
                 items=[
                     ItemConfirm(text='Walk', map_type='w'),
@@ -1020,11 +1017,11 @@ class CarPos(MDApp):
                     Cancel(
                         text='CANCEL'),
                 ],
-                size_hint_x=.75
+                # size_hint_x=.75
             )
         if not self.dialog:
             self.dialog = MDDialog(
-                text="TURN ON GPS?",
+                text="Turn on gps?",
                 size_hint_x=.8,
                 buttons=[
                     Accept(
@@ -1047,11 +1044,11 @@ class CarPos(MDApp):
                     Cancel(
                         text='CANCEL'),
                 ],
-                size_hint_x=.75
+                # size_hint_x=.75
             )
         if not self.plate_dialog:
             self.plate_dialog = MDDialog(
-                title="SET THE PLATE",
+                title="Set the plate",
                 type="custom",
                 content_cls=PltContent(),
                 buttons=[
@@ -1066,12 +1063,7 @@ class CarPos(MDApp):
         self.loca = loc['loc'][-1]
 
     def update_theme_color(self, color):
-        # if color == 'Verde':
-        #     color = 'Green'
-        # elif color == 'Rosso':
-        #     color = 'Red'
-        # elif color == 'Blu':
-        #     color = 'Blue'
+
         self.theme_cls.primary_palette = color
         self.mark_img = f'imgs/{color}.png'
         self.car_image = f'imgs/{color}-car.png'
@@ -1163,7 +1155,5 @@ class CarPos(MDApp):
 
 
 if __name__ == '__main__':
-    if platform in ('win', 'linux', 'macos'):
-        Window.size = dp(1920), dp(1080)
     app = CarPos()
     app.run()
