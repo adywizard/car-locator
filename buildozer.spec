@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = Test
+title = Car locator
 
 # (str) Package name
 package.name = test
@@ -56,7 +56,7 @@ orientation = portrait
 
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
-z
+
 #
 # OSX Specific
 #
@@ -123,7 +123,7 @@ android.skip_update = True
 # agreements. This is intended for automation only. If set to False,
 # the default, you will be shown the license when first running
 # buildozer.
-# android.accept_sdk_license = False
+android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.renpy.android.PythonActivity
