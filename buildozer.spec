@@ -4,7 +4,7 @@
 title = Car locator
 
 # (str) Package name
-package.name = test
+package.name = Car locator
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,plyer,kivy==2.0.0rc3,git+https://github.com/HeaTTheatR/KivyMD.git,openssl,urllib3,certifi,requests,chardet,idna
+requirements = python3,plyer,kivy==2.0.0rc3,https://github.com/kivymd/KivyMD/archive/master.zip,openssl,urllib3,certifi,requests,chardet,idna
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

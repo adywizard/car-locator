@@ -1,4 +1,5 @@
 """Find my car"""
+__author__ = 'Ady Wizard'
 from functools import partial
 from random import randint
 import os
