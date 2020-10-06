@@ -1036,7 +1036,7 @@ class CarPos(MDApp):
                 type='confirmation',
                 items=[
                     ItemColor(text='Indigo'),
-                    ItemColor(text='Blu'),
+                    ItemColor(text='Blue'),
                     ItemColor(text='Red'),
                     ItemColor(text='Green')
                 ],
