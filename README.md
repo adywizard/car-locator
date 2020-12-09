@@ -20,4 +20,4 @@ Otherwise already built app can be found in bin folder.
 
 The app in bin folder was built with kivy==2.0.0rc3 and kivymd==0.402.2.dev0.
 
-All requirements can be found in buildozer.spec file
+All other requirements can be found in buildozer.spec file
