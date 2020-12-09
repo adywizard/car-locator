@@ -21,7 +21,6 @@ from kivy.properties import StringProperty, ListProperty,\
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 from kivy.utils import platform
-from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.clock import mainthread
 from plyer import gps
@@ -794,7 +793,7 @@ class CarPos(MDApp):
         self.get_last_location()
         self.create_history()
         self.configure_gps()
-        self.size_animation_one()
+        Clock.schedule_once(self.size_animation_one, 2)
 
     def on_pause(self):
         try:
@@ -812,8 +811,8 @@ class CarPos(MDApp):
 
     def on_resume(self):
         self.get_last_location()
-        # Clock.schedule_once(self.open_gps_settings, 1)
-        self.size_animation_one()
+        Clock.schedule_once(self.size_animation_one, 2)
+        # self.size_animation_one()
 
     def on_stop(self):
         files = glob.glob('/cache/*.png')
@@ -901,11 +900,16 @@ class CarPos(MDApp):
             toast('No location')
 
     def size_animation_one(self, *_):
-        self.anim_size = Animation(
-            wx1=randint(0, int(self.w)), wy1=randint(0, int(self.h)),
-            r1=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_two)
-        self.anim_size.start(self.root)
+
+        try:
+            self.anim_size = Animation(
+                wx1=randint(0, int(self.w)), wy1=randint(0, int(self.h)),
+                r1=randint(10, Window.height//6), d=5, t='in_bounce')
+            self.anim_size.bind(on_complete=self.size_animation_two)
+            self.anim_size.start(self.root)
+        except Exception:
+            Animation.cancel_all(self.root)
+            Clock.schedule_once(self.size_animation_one, 2)
 
     def size_animation_two(self, ani, wid):
         self.anim_size = Animation(
