@@ -625,6 +625,9 @@ class CarPos(MDApp):
 
             self.root.ids.sm.current = 'scr 1'
 
+        elif self.root.ids.sm.current == 'scr 1':
+            mActivity.moveTaskToBack(True)
+
     def back_key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 in [27, 1001]:
             self.handle_screens()
