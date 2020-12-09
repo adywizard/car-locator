@@ -799,10 +799,6 @@ class CarPos(MDApp):
         Clock.schedule_once(self.size_animation_one, 2)
 
     def on_pause(self):
-        try:
-            gps.stop()
-        except Exception:
-            Logger.info('On_pause: %s', exc_info=1)
         Animation.cancel_all(self.root)
         files = glob.glob('/cache/*.png')
         for f in files:
@@ -810,6 +806,7 @@ class CarPos(MDApp):
                 os.remove(f)
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
+        return True
 
     def on_resume(self):
         self.get_last_location()
@@ -817,6 +814,10 @@ class CarPos(MDApp):
         # self.size_animation_one()
 
     def on_stop(self):
+        try:
+            gps.stop()
+        except Exception:
+            Logger.info('On_pause: %s', exc_info=1)
         files = glob.glob('/cache/*.png')
         for f in files:
             try:
