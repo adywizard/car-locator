@@ -6,7 +6,7 @@ Car locator android app created with kivy/kivymd
 
 If you want to build this app yourself, and icons are not displayed properly:
 
-Go in folder:
+Go in to the folder:
 
 '.buildozer\android\platform\python-for-android\pythonforandroid\recipes\sdl2_ttf'
 
