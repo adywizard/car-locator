@@ -810,7 +810,6 @@ class CarPos(MDApp):
                 os.remove(f)
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
-        return True
 
     def on_resume(self):
         self.get_last_location()
@@ -825,7 +824,6 @@ class CarPos(MDApp):
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
         Animation.cancel_all(self.root)
-        return True
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
 
