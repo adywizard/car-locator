@@ -24,7 +24,7 @@ from kivy.utils import platform
 from kivy.core.window import Window
 from kivy.clock import mainthread
 from plyer import gps
-from kivy.garden.mapview import MapMarker
+from kivy_garden.mapview import MapMarker
 from kivy.logger import Logger
 from kivy.clock import Clock
 from kivy.animation import Animation
@@ -62,7 +62,7 @@ KV = """
 #: import Clock kivy.clock.Clock
 #: import SE kivy.effects.scroll.ScrollEffect
 #: import p kivy.utils.platform
-#: import MapView kivy.garden.mapview.MapView
+#: import MapView kivy_garden.mapview.MapView
 #: import randint random.randint
 #: import w kivy.core.window.Window
 

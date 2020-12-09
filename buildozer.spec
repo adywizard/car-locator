@@ -36,14 +36,14 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,plyer,kivy==2.0.0rc3,https://github.com/kivymd/KivyMD/archive/master.zip,openssl,urllib3,certifi,requests,chardet,idna
+requirements = python3,plyer,kivy==2.0.0rc3,https://github.com/kivymd/KivyMD/archive/master.zip,openssl,urllib3,certifi,requests,chardet,idna, kivy_garden.mapview
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
 
 # (list) Garden requirements
-garden_requirements = mapview
+# garden_requirements = mapview
 
 # (str) Presplash of the application
 presplash.filename = %(source.dir)s/imgs/map.png
