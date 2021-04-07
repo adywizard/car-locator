@@ -1,7 +1,7 @@
 """Find my car"""
 __author__ = 'Ady Wizard'
 from functools import partial
-from random import randint
+from random import choice
 import os
 import glob
 import json
@@ -17,7 +17,7 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.list import OneLineAvatarIconListItem
 from kivymd.toast import toast
 from kivy.properties import StringProperty, ListProperty,\
-    ObjectProperty, NumericProperty
+    ObjectProperty, NumericProperty, ColorProperty
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 from kivy.utils import platform
@@ -28,7 +28,23 @@ from kivy_garden.mapview import MapMarker
 from kivy.logger import Logger
 from kivy.clock import Clock
 from kivy.animation import Animation
+from kivy.graphics import (
+    RenderContext, Fbo, Color,
+    ClearColor, ClearBuffers, Rectangle
+)
+from kivy.uix.floatlayout import FloatLayout
 
+BUBBLE_COLORS = [
+    [214/255, 131/255, 54/255, 1],
+    [56/255, 126/255, 217/255, 1],
+    [119/255, 93/255, 186/255, 1],
+    [207/255, 64/255, 142/255, 1],
+    [83/255, 194/255, 111/255, 1],
+    [235/255, 217/255, 138/255, 1],
+    [131/255, 138/255, 242/255, 1],
+    [182/255, 40/255, 247/255, 1],
+    [79/255, 247/255, 180/255, 1]
+    ]
 
 if platform == 'android':
     from jnius import autoclass, cast
@@ -40,7 +56,7 @@ if platform == 'android':
     Context = autoclass('android.content.Context')
     String = autoclass('java.lang.String')
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
-    Color = autoclass("android.graphics.Color")
+    AColor = autoclass("android.graphics.Color")
     LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
     Settings = autoclass('android.provider.Settings')
     LocationManager = autoclass('android.location.LocationManager')
@@ -57,6 +73,33 @@ else:
 MAIL = "your.mail@here.com"
 
 
+header = '''
+$HEADER$
+uniform vec2 resolution;
+uniform float time;
+uniform vec2 mouse;
+'''
+
+
+shader_watter_bubble = header + '''
+void main(void)
+{
+    vec2 halfres = resolution.xy / 2.0;
+    vec2 cpos = vec4(frag_modelview_mat * gl_FragCoord).xy;
+
+    vec2 sinres = vec2(tan(resolution.x * time), -sin(resolution * time));
+
+    cpos.x -= 0.5*halfres.x*sin(time/2.0)+0.3*halfres.x*cos(time)+halfres.x;
+    cpos.y -= 0.5*halfres.y*sin(time/5.0)+0.3*halfres.y*sin(time)+halfres.y;
+    float cLength = length(cpos);
+    vec2 uv = tex_coord0 + (cpos / cLength) * sin(cLength / 50.0 - time * 2.0) / 15.0;
+
+    vec3 col = texture2D(texture0, uv).xyz;
+    gl_FragColor = vec4(col, 1.0);
+}
+'''
+
+
 KV = """
 #: import colors kivymd.color_definitions.colors
 #: import Clock kivy.clock.Clock
@@ -69,6 +112,19 @@ KV = """
 #: set color_s '#'+colors[app.theme_cls.primary_palette]['700']
 #: set color_n '#'+colors[app.theme_cls.primary_palette]['500']
 #: set bluish 213/255, 221/255, 232/255, 1
+
+
+<SemiCircle>
+    canvas.before:
+
+        Color:
+            rgba: self.color
+
+        Ellipse:
+            angle_start: self.angle_start
+            angle_end: self.angle_end
+            size: self.size
+            pos: self.pos
 
 
 <PltContent>:
@@ -215,70 +271,111 @@ KV = """
 <RootWidget>:
     mapview: mapview
 
-    NavigationLayout:
+    MDNavigationLayout:
         ScreenManager:
             id: sm
+            MDScreen:
+
             Screen:
-                canvas.before:
-                    Color:
-                        rgba: app.theme_cls.primary_color
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx1, root.wy1, root.r1/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx2, root.wy2, root.r2/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx3, root.wy3, root.r3/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx4, root.wy4, root.r4/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx5, root.wy5, root.r5/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx6, root.wy6, root.r6/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx7, root.wy7, root.r7/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx8, root.wy8, root.r8/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx9, root.wy9, root.r9/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx10, root.wy10, root.r10/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx11, root.wy11, root.r11/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx12, root.wy12, root.r12/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx13, root.wy13, root.r13/2, 0, 360)
-                    SmoothLine:
-                        close: True
-                        circle:
-                            (root.wx14, root.wy14, root.r14/2, 0, 360)
                 name: 'scr 1'
+                id: scr1
+
+                ShaderWidget:
+                    id: shader_widget
+                    size_hint: 1, 1
+
+                    LayoutWidget
+                        id: r
+                        size_hint: 1, 1
+                        canvas.before:
+                            Color:
+                                rgba: self.color
+                            Rectangle:
+                                size: self.size
+                                pos: self.pos
+                            PushMatrix
+                            Scale:
+                                x: self.x_scale
+                                y: self.y_scale
+                                z: self.z_scale
+                            Rotate:
+                                angle: self.angle
+                                origin: self.center
+                        canvas.after:
+                            PopMatrix
+
+                        SemiCircle
+                            id: se_half
+                            color: app.theme_cls.primary_color
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.x + 50, root.y + 100,
+                            size_hint: None, None
+                            size: 300, 300
+
+                        SemiCircle
+                            id: e_half
+                            color: app.theme_cls.primary_color
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.width - 100, root.height - 150,
+                            size_hint: None, None
+                            size: 300, 300
+
+                        SemiCircle
+                            id: s_half
+                            color: app.theme_cls.primary_color
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x - 200, root.center_y - 100,
+                            size_hint: None, None
+                            size: 100, 100
+
+                        SemiCircle
+                            id: ft_half
+                            color: app.theme_cls.primary_dark
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x - 200, root.center_y + 250,
+                            size_hint: None, None
+                            size: 100, 100
+
+                        SemiCircle
+                            id: f_half
+                            color: app.theme_cls.primary_light
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x + 200, root.center_y - 250,
+                            size_hint: None, None
+                            size: 50, 50
+
+                        SemiCircle
+                            id: t_half
+                            color: app.theme_cls.primary_color
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x + 200, root.center_y + 250,
+                            size_hint: None, None
+                            size: 25, 25
+
+                        SemiCircle
+                            id: first_half
+                            color: app.theme_cls.primary_dark
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x, root.center_y - 150
+                            size_hint: None, None
+                            size: 150, 150
+
+                        SemiCircle
+                            id: second_half
+                            color: app.theme_cls.primary_light
+                            angle_start: 0
+                            angle_end: 360
+                            center: root.center_x, root.center_y + 150
+                            size_hint: None, None
+                            size: 100, 100
+
 
                 BoxLayout:
                     orientation: 'vertical'
@@ -293,6 +390,7 @@ KV = """
                     MDFloatLayout:
 
                         MDFillRoundFlatIconButton:
+
                             icon: 'location-enter'
                             text: 'TURN ON GPS'
                             theme_text_color: 'Custom'
@@ -305,6 +403,7 @@ KV = """
                                 app.turn_on_gps()
 
                         MDFillRoundFlatIconButton:
+
                             icon: 'map-marker-plus'
                             text: 'SAVE THE LOCATION'
                             theme_text_color: 'Custom'
@@ -319,6 +418,7 @@ KV = """
                                 app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
+
                             icon: 'map-search-outline'
                             text: 'FIND MY CAR'
                             theme_text_color: 'Custom'
@@ -334,6 +434,7 @@ KV = """
                                 sm.current = 'scr 2' if app.loca else 'scr 1'
 
                         MDFillRoundFlatIconButton:
+
                             icon: 'map-marker-remove-outline'
                             text: 'GO TO CRONOLOGY'
                             theme_text_color: 'Custom'
@@ -419,6 +520,91 @@ KV = """
 """
 
 
+class LayoutWidget(FloatLayout):
+    angle = NumericProperty()
+    color = ColorProperty([0, 0, 0, 0])
+    x_scale = NumericProperty(1)
+    y_scale = NumericProperty(1)
+    z_scale = NumericProperty(1)
+
+
+class SemiCircle(FloatLayout):
+    color = ColorProperty([1, 1, 1, 1])
+    angle_start = NumericProperty()
+    angle_end = NumericProperty()
+
+
+class ShaderWidget(FloatLayout):
+
+    mouse_pos = ListProperty([100, 100])
+
+    fs = StringProperty(None)
+
+    texture = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+
+        Window.bind(mouse_pos=self.get_mouse_pos)
+
+        self.canvas = RenderContext(use_parent_projection=True,
+                                    use_parent_modelview=True,
+                                    use_parent_frag_modelview=True)
+
+        with self.canvas:
+            self.fbo = Fbo(size=self.size)
+            self.fbo_color = Color(1, 1, 1, 1)
+            self.fbo_rect = Rectangle(size=self.size, pos=self.pos)
+
+        with self.fbo:
+            ClearColor(0, 0, 0, 0)
+            ClearBuffers()
+
+        super(ShaderWidget, self).__init__(**kwargs)
+
+        self.fs = shader_watter_bubble
+        Clock.schedule_interval(self.update_glsl, 0)
+
+    def get_mouse_pos(self, w, pos):
+        self.canvas['mouse'] = pos
+        self.mouse_pos = pos
+
+    def update_glsl(self, *largs):
+        self.canvas['time'] = Clock.get_boottime()
+        self.canvas['resolution'] = [float(v) for v in self.size]
+
+    def on_fs(self, instance, value):
+
+        shader = self.canvas.shader
+        old_value = shader.fs
+        shader.fs = value
+        if not shader.success:
+            shader.fs = old_value
+            raise Exception('compilation failed')
+
+    def add_widget(self, *args, **kwargs):
+        c = self.canvas
+        self.canvas = self.fbo
+        super(ShaderWidget, self).add_widget(*args, **kwargs)
+        self.canvas = c
+
+    def remove_widget(self, *args, **kwargs):
+        c = self.canvas
+        self.canvas = self.fbo
+        super(ShaderWidget, self).remove_widget(*args, **kwargs)
+        self.canvas = c
+
+    def on_size(self, instance, value):
+        self.fbo.size = value
+        self.texture = self.fbo.texture
+        self.fbo_rect.size = value
+
+    def on_pos(self, instance, value):
+        self.fbo_rect.pos = value
+
+    def on_texture(self, instance, value):
+        self.fbo_rect.texture = value
+
+
 class PltContent(MDFloatLayout):
     pass
 
@@ -444,48 +630,6 @@ class RootWidget(Screen):
 
     mapview = ObjectProperty()
     alpha = ListProperty([1])
-    wx1 = NumericProperty(randint(10, Window.width))
-    wy1 = NumericProperty(randint(10, Window.height))
-    wx2 = NumericProperty(randint(10, Window.width))
-    wy2 = NumericProperty(randint(10, Window.height))
-    wx3 = NumericProperty(randint(10, Window.width))
-    wy3 = NumericProperty(randint(10, Window.height))
-    wx4 = NumericProperty(randint(10, Window.width))
-    wy4 = NumericProperty(randint(10, Window.height))
-    wx5 = NumericProperty(randint(10, Window.width))
-    wy5 = NumericProperty(randint(10, Window.height))
-    wx6 = NumericProperty(randint(10, Window.width))
-    wy6 = NumericProperty(randint(10, Window.height))
-    wx7 = NumericProperty(randint(10, Window.width))
-    wy7 = NumericProperty(randint(10, Window.height))
-    wx8 = NumericProperty(randint(10, Window.width))
-    wy8 = NumericProperty(randint(10, Window.height))
-    wx9 = NumericProperty(randint(10, Window.width))
-    wy9 = NumericProperty(randint(10, Window.height))
-    wx10 = NumericProperty(randint(10, Window.width))
-    wy10 = NumericProperty(randint(10, Window.height))
-    wx11 = NumericProperty(randint(10, Window.width))
-    wy11 = NumericProperty(randint(10, Window.height))
-    wx12 = NumericProperty(randint(10, Window.width))
-    wy12 = NumericProperty(randint(10, Window.height))
-    wx13 = NumericProperty(randint(10, Window.width))
-    wy13 = NumericProperty(randint(10, Window.height))
-    wx14 = NumericProperty(randint(10, Window.width))
-    wy14 = NumericProperty(randint(10, Window.height))
-    r1 = NumericProperty(randint(10, Window.height//6))
-    r2 = NumericProperty(randint(10, Window.height//6))
-    r3 = NumericProperty(randint(10, Window.height//6))
-    r4 = NumericProperty(randint(10, Window.height//6))
-    r5 = NumericProperty(randint(10, Window.height//6))
-    r6 = NumericProperty(randint(10, Window.height//6))
-    r7 = NumericProperty(randint(10, Window.height//6))
-    r8 = NumericProperty(randint(10, Window.height//6))
-    r9 = NumericProperty(randint(10, Window.height//6))
-    r10 = NumericProperty(randint(10, Window.height//6))
-    r11 = NumericProperty(randint(10, Window.height//6))
-    r12 = NumericProperty(randint(10, Window.height//6))
-    r13 = NumericProperty(randint(10, Window.height//6))
-    r14 = NumericProperty(randint(10, Window.height//6))
 
 
 class SwipeToDeleteItem(MDCardSwipe):
@@ -561,10 +705,12 @@ class DrawerList(ThemableBehavior, MDList):
             if app.theme_cls.theme_style == 'Dark':
                 app.root.alpha = [1]
                 app.theme_cls.theme_style = 'Light'
+                app.root.ids.r.color = [1, 1, 1, 1]
             elif app.theme_cls.theme_style == 'Light':
                 app.root.alpha = [1]
                 app.theme_cls.theme_style = 'Dark'
                 app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
+                app.root.ids.r.color = [0, 0, 0, 1]
             app.save_theme()
 
 
@@ -590,6 +736,14 @@ class CarPos(MDApp):
     h = None
     plate = StringProperty()
     green = False
+
+    w_count = 0
+    upper_left = False
+    lower_right = False
+
+    def first_start(self, *_):
+        self.root.ids.sm.current = 'scr 1'
+        self.set_decorations()
 
     def request_android_permissions(self):
 
@@ -627,6 +781,7 @@ class CarPos(MDApp):
 
         elif self.root.ids.sm.current == 'scr 1':
             mActivity.moveTaskToBack(True)
+            Clock.schedule_once(self.on_pause, 1)
 
     def back_key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 in [27, 1001]:
@@ -772,8 +927,8 @@ class CarPos(MDApp):
         window.clearFlags(LayoutParams.FLAG_LAYOUT_NO_LIMITS)
         window.clearFlags(LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.setStatusBarColor(Color.parseColor(color_s))
-        window.setNavigationBarColor(Color.parseColor(color_n))
+        window.setStatusBarColor(AColor.parseColor(color_s))
+        window.setNavigationBarColor(AColor.parseColor(color_n))
         if self.green:
             window.getDecorView().setSystemUiVisibility(
                 LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS |
@@ -783,23 +938,25 @@ class CarPos(MDApp):
             window.getDecorView().setSystemUiVisibility(0)
 
     def on_start(self):
-        self.w = self.root.width
-        self.h = self.root.height
-        self.set_theme()
-        self.set_decorations()
 
-        if platform == 'android':
-            mActivity.removeLoadingScreen()
+        self.set_theme()
+        # if platform == 'android':
+        #     mActivity.removeLoadingScreen()
 
         self.create_content_drawer()
         self.create_dialogs()
         self.get_last_location()
         self.create_history()
         self.configure_gps()
-        Clock.schedule_once(self.size_animation_one, 2)
+        # self.root.ids.shader_widget.fs = shader_watter_bubble
+        Clock.schedule_once(self.animate_colors, 3)
+        Clock.schedule_once(self.animate_lower_pos, 3)
+        Clock.schedule_once(
+            self.first_start, 2)
+        # Clock.schedule_once(self.size_animation_one, 2)
 
-    def on_pause(self):
-        Animation.cancel_all(self.root)
+    def on_pause(self, *_):
+        # Animation.cancel_all(self.root)
         files = glob.glob('/cache/*.png')
         for f in files:
             try:
@@ -810,10 +967,10 @@ class CarPos(MDApp):
 
     def on_resume(self):
         self.get_last_location()
-        Clock.schedule_once(self.size_animation_one, 2)
+        # Clock.schedule_once(self.size_animation_one, 2)
         # self.size_animation_one()
 
-    def on_stop(self):
+    def on_stop(self, *_):
         try:
             gps.stop()
         except Exception:
@@ -824,7 +981,7 @@ class CarPos(MDApp):
                 os.remove(f)
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
-        Animation.cancel_all(self.root)
+        # Animation.cancel_all(self.root)
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
 
@@ -901,114 +1058,6 @@ class CarPos(MDApp):
         else:
             toast('No location')
 
-    def size_animation_one(self, *_):
-
-        try:
-            self.anim_size = Animation(
-                wx1=randint(0, int(self.w)), wy1=randint(0, int(self.h)),
-                r1=randint(10, Window.height//6), d=5, t='in_bounce')
-            self.anim_size.bind(on_complete=self.size_animation_two)
-            self.anim_size.start(self.root)
-        except Exception:
-            Animation.cancel_all(self.root)
-            Clock.schedule_once(self.size_animation_one, 2)
-
-    def size_animation_two(self, ani, wid):
-        self.anim_size = Animation(
-            wx2=randint(0, int(self.w)), wy2=randint(0, int(self.h)),
-            r2=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_three)
-        self.anim_size.start(self.root)
-
-    def size_animation_three(self, ani, wid):
-        self.anim_size = Animation(
-            wx3=randint(0, int(self.w)), wy3=randint(0, int(self.h)),
-            r3=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_four)
-        self.anim_size.start(self.root)
-
-    def size_animation_four(self, ani, wid):
-        self.anim_size = Animation(
-            wx4=randint(0, int(self.w)), wy4=randint(0, int(self.h)),
-            r4=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_five)
-        self.anim_size.start(self.root)
-
-    def size_animation_five(self, ani, wid):
-        self.anim_size = Animation(
-            wx5=randint(0, int(self.w)), wy5=randint(0, int(self.h)),
-            r5=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_six)
-        self.anim_size.start(self.root)
-
-    def size_animation_six(self, ani, wid):
-        self.anim_size = Animation(
-            wx6=randint(0, int(self.w)), wy6=randint(0, int(self.h)),
-            r6=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_seven)
-        self.anim_size.start(self.root)
-
-    def size_animation_seven(self, ani, wid):
-        self.anim_size = Animation(
-            wx7=randint(0, int(self.w)), wy7=randint(0, int(self.h)),
-            r7=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_eight)
-        self.anim_size.start(self.root)
-
-    def size_animation_eight(self, ani, wid):
-        self.anim_size = Animation(
-            wx8=randint(0, int(self.w)), wy8=randint(0, int(self.h)),
-            r8=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_nine)
-        self.anim_size.start(self.root)
-
-    def size_animation_nine(self, ani, wid):
-        self.anim_size = Animation(
-            wx9=randint(0, int(self.w)), wy9=randint(0, int(self.h)),
-            r9=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_ten)
-        self.anim_size.start(self.root)
-
-    def size_animation_ten(self, ani, wid):
-        self.anim_size = Animation(
-            wx10=randint(0, int(self.w)), wy10=randint(0, int(self.h)),
-            r10=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_eleven)
-        self.anim_size.start(self.root)
-
-    def size_animation_eleven(self, ani, wid):
-        self.anim_size = Animation(
-            wx11=randint(0, int(self.w)), wy11=randint(0, int(self.h)),
-            r11=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_twelve)
-        self.anim_size.start(self.root)
-
-    def size_animation_twelve(self, ani, wid):
-        self.anim_size = Animation(
-            wx12=randint(0, int(self.w)), wy12=randint(0, int(self.h)),
-            r12=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_thirteen)
-        self.anim_size.start(self.root)
-
-    def size_animation_thirteen(self, ani, wid):
-        self.anim_size = Animation(
-            wx13=randint(0, int(self.w)), wy13=randint(0, int(self.h)),
-            r13=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_fourteen)
-        self.anim_size.start(self.root)
-
-    def size_animation_fourteen(self, ani, wid):
-        self.anim_size = Animation(
-            wx14=randint(0, int(self.w)), wy14=randint(0, int(self.h)),
-            r14=randint(10, Window.height//6), d=5, t='in_bounce')
-        self.anim_size.bind(on_complete=self.size_animation_one)
-        self.anim_size.start(self.root)
-
-    def color_animation_back(self, *_):
-        self.anim_color = Animation(color=[.5, .5, .5, .5], d=3)
-        self.anim_color.bind(on_complete=self.color_animation)
-        self.anim_color.start(self.root)
-
     def create_dialogs(self):
         if not self.map_dialog:
             self.map_dialog = MDDialog(
@@ -1064,7 +1113,9 @@ class CarPos(MDApp):
             )
 
     def get_last_location(self):
-        with open('locations/loc.json', 'r+') as f:
+        with open(
+            'locations/loc.json', 'r+'
+        ) as f:
             loc = json.load(f)
         self.loca = loc['loc'][-1]
 
@@ -1077,7 +1128,7 @@ class CarPos(MDApp):
         self.save_theme()
 
     def on_anchor(self, *_):
-        Clock.schedule_once(self.save_theme, .5)
+        Clock.schedule_once(self.save_theme, 0)
 
     def save_theme(self, *_):
         sett = {
@@ -1095,14 +1146,19 @@ class CarPos(MDApp):
     def set_theme(self):
         with open('settings/sett.json') as f:
             sett = json.load(f)
-            self.theme_cls.theme_style = sett["theme_style"]
-            self.theme_cls.primary_palette = sett["primary_palette"]
-            self.root.alpha = sett["alpha"]
-            self.mark_img = sett["mark"]
-            self.car_image = sett["car"]
-            self.anchor = sett["drawer"]
-            self.plate = sett["plate"]
-            app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
+        self.theme_cls.theme_style = sett["theme_style"]
+        self.theme_cls.primary_palette = sett["primary_palette"]
+        self.root.alpha = sett["alpha"]
+        self.mark_img = sett["mark"]
+        self.car_image = sett["car"]
+        self.anchor = sett["drawer"]
+        self.plate = sett["plate"]
+        app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
+        if sett["theme_style"] == 'Dark':
+            self.root.ids.r.color = [0, 0, 0, 1]
+        else:
+            self.root.ids.r.color = [1, 1, 1, 1]
+        sett = None
 
     def set_decorations(self):
         if platform == "android":
@@ -1158,6 +1214,66 @@ class CarPos(MDApp):
                     tertiary_text=f"longitude {i[0]} latitude {i[1]}"
                     )
             )
+
+    def animate_colors(self, *_):
+
+        if self.w_count == 0:
+            w = self.root.ids.first_half
+        elif self.w_count == 1:
+            w = self.root.ids.second_half
+        elif self.w_count == 2:
+            w = self.root.ids.t_half
+        elif self.w_count == 3:
+            w = self.root.ids.f_half
+        elif self.w_count == 4:
+            w = self.root.ids.ft_half
+        elif self.w_count == 5:
+            w = self.root.ids.s_half
+        elif self.w_count == 6:
+            w = self.root.ids.se_half
+        elif self.w_count == 7:
+            w = self.root.ids.e_half
+
+        a = Animation(color=choice(BUBBLE_COLORS), d=4, t='in_out_bounce')
+        a.bind(on_complete=self.animate_colors)
+        a.start(w)
+
+        if self.w_count == 7:
+            self.w_count = 0
+        else:
+            self.w_count += 1
+
+    def animate_lower_pos(self, *_):
+
+        if not self.lower_right:
+            x = self.root.width - self.root.ids.se_half.width
+        else:
+            x = self.root.x
+
+        self.lower_right = not self.lower_right
+
+        a = Animation(
+            x=x,
+            d=8, t='out_bounce')
+
+        a.bind(on_complete=self.animate_upper_pos)
+        a.start(self.root.ids.se_half)
+
+    def animate_upper_pos(self, *_):
+
+        if not self.upper_left:
+            x = self.root.x
+        else:
+            x = self.root.width - self.root.ids.e_half.width
+
+        self.upper_left = not self.upper_left
+
+        a = Animation(
+            x=x,
+            d=8, t='in_bounce')
+
+        a.bind(on_complete=self.animate_lower_pos)
+        a.start(self.root.ids.e_half)
 
 
 if __name__ == '__main__':

@@ -20,7 +20,12 @@ Otherwise already built app can be found in the bin folder.
 
 ### requirements:
 
-The app in the bin folder was built with kivy==2.0.0rc4 and kivymd==0.402.2.dev0.
+The app in the bin folder was built with kivy==2.0.0 and kivymd==0.402.2.dev0.
 
 All other requirements can be found in buildozer.spec file
+
+## Version 0.1.2
+
+Added shader animation instead of simple circles and lottie animation instead of static preplash image
+
 

@@ -1,11 +1,11 @@
 {
     "theme_style": "Dark",
-    "primary_palette": "Green",
+    "primary_palette": "Indigo",
     "alpha": [
         1
     ],
-    "mark": "imgs/Green.png",
-    "car": "imgs/Green-car.png",
+    "mark": "imgs/Indigo.png",
+    "car": "imgs/Indigo-car.png",
     "drawer": "left",
     "plate": "XX ABCD YY"
 }
