@@ -6,21 +6,17 @@ Car locator android app created with kivy/kivymd
 
 ## How to build
 
-If you want to build this app yourself, and icons are not displayed properly:
+If you want to build this app (last version) your self, you'll have to set p4a = develop in buildozer.spec if it doesent compile is due to https://github.com/kivy/kivy/issues/7398 and likely you'll have to make changes at your own. (Manualy add lottie support to your project).
 
-Go in to the folder:
-
-'.buildozer\android\platform\python-for-android\pythonforandroid\recipes\sdl2_ttf'
-
-and in __init__.py  file change version  = '2.0.14' to version  = '2.0.15'
-this will allow you to correctly display icons in app,
-this is necessary due to the bug in the version = '2.0.14' of sdl2_ttf.
+else if you want to build previus version of the app just rename main.py to something else and main_with_circle_animation.py to main.py
+then buildozer android build.
 
 Otherwise already built app can be found in the bin folder.
 
 ### requirements:
 
-The app in the bin folder was built with kivy==2.0.0 and kivymd==0.402.2.dev0.
+The app in the bin folder was built with kivy==2.0.0 and kivymd==0.402.2.dev0 and modifyed version of python for android because of the above issue.
+
 
 All other requirements can be found in buildozer.spec file
 
@@ -28,4 +24,4 @@ All other requirements can be found in buildozer.spec file
 
 Added shader animation instead of simple circles and lottie animation instead of static preplash image
 
-
+![](screen2.gif)
