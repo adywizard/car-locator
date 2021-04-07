@@ -764,6 +764,7 @@ class CarPos(MDApp):
     lower_right = False
 
     transition = None
+    t = 'fallout'
 
     def set_first_start_transition(self):
         with open('settings/sett.json') as f:
@@ -794,28 +795,28 @@ class CarPos(MDApp):
         self.transition = next(self.transitions)
 
         if isinstance(self.transition, FadeTransition):
-            t = "fade"
+            self.t = "fade"
         elif isinstance(self.transition, SlideTransition):
-            t = "slide"
+            self.t = "slide"
         elif isinstance(self.transition, CardTransition):
-            t = "card"
+            self.t = "card"
         elif isinstance(self.transition, SwapTransition):
-            t = "swap"
+            self.t = "swap"
         elif isinstance(self.transition, FallOutTransition):
-            t = "fallout"
+            self.t = "fallout"
         elif isinstance(self.transition, WipeTransition):
-            t = "wipe"
+            self.t = "wipe"
         elif isinstance(self.transition, RiseInTransition):
-            t = "rise"
+            self.t = "rise"
 
         with open('settings/sett.json', 'r+') as f:
             sett = json.load(f)
-            sett['transition'] = t
+            sett['transition'] = self.t
             f.seek(0)
             json.dump(sett, f, indent=4)
             f.truncate()
 
-        toast(text=t+' set')
+        toast(text=self.t+' set')
 
     def request_android_permissions(self):
 
@@ -1193,7 +1194,7 @@ class CarPos(MDApp):
 
     def get_last_location(self):
         with open(
-            'locations/loc.json', 'r+'
+            'locations/loc.json', 'r'
         ) as f:
             loc = json.load(f)
         self.loca = loc['loc'][-1]
@@ -1217,7 +1218,8 @@ class CarPos(MDApp):
                 "mark": self.mark_img,
                 "car": self.car_image,
                 "drawer": self.anchor,
-                "plate": self.plate
+                "plate": self.plate,
+                "transition": self.t
                 }
         with open('settings/sett.json', 'w') as f:
             json.dump(sett, f, indent=4)
