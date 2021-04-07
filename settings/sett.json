@@ -7,5 +7,6 @@
     "mark": "imgs/Indigo.png",
     "car": "imgs/Indigo-car.png",
     "drawer": "left",
-    "plate": "XX ABCD YY"
+    "plate": "XX ABCD YY",
+    "transition": "fallout"
 }

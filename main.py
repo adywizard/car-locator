@@ -18,7 +18,14 @@ from kivymd.uix.list import OneLineAvatarIconListItem
 from kivymd.toast import toast
 from kivy.properties import StringProperty, ListProperty,\
     ObjectProperty, NumericProperty, ColorProperty
-from kivy.uix.screenmanager import Screen
+
+from kivy.uix.screenmanager import (
+    Screen, CardTransition,
+    SwapTransition, SlideTransition,
+    FadeTransition, FallOutTransition,
+    WipeTransition, RiseInTransition
+    )
+
 from kivy.lang import Builder
 from kivy.utils import platform
 from kivy.core.window import Window
@@ -46,6 +53,14 @@ BUBBLE_COLORS = [
     [79/255, 247/255, 180/255, 1]
     ]
 
+TRANSITIONS = [
+    CardTransition(),
+    SwapTransition(), SlideTransition(),
+    FadeTransition(), FallOutTransition(),
+    WipeTransition(), RiseInTransition()]
+
+URL = "https://www.google.com/maps/search/@"
+
 if platform == 'android':
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
@@ -70,7 +85,7 @@ else:
         return
 
 
-MAIL = "your.mail@here.com"
+MAIL = "developer.mail@here.com"
 
 
 header = '''
@@ -89,10 +104,17 @@ void main(void)
 
     vec2 sinres = vec2(tan(resolution.x * time), -sin(resolution * time));
 
-    cpos.x -= 0.5*halfres.x*sin(time/2.0)+0.3*halfres.x*cos(time)+halfres.x;
-    cpos.y -= 0.5*halfres.y*sin(time/5.0)+0.3*halfres.y*sin(time)+halfres.y;
+    cpos.x -= 0.5 * halfres.x * sin(time/2.0) + \
+        0.3 * halfres.x * cos(time) + halfres.x;
+
+    cpos.y -= 0.5 * halfres.y * sin(time/5.0) + \
+        0.3 * halfres.y * sin(time) + halfres.y;
+
     float cLength = length(cpos);
-    vec2 uv = tex_coord0 + (cpos / cLength) * sin(cLength / 50.0 - time * 2.0) / 15.0;
+
+    vec2 uv = \
+        tex_coord0 + (cpos / cLength) * \
+            sin(cLength / 50.0 - time * 2.0) / 15.0;
 
     vec3 col = texture2D(texture0, uv).xyz;
     gl_FragColor = vec4(col, 1.0);
@@ -309,54 +331,54 @@ KV = """
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.x + 50, root.y + 100,
+                            center: root.x + dp(25), root.y + dp(100),
                             size_hint: None, None
-                            size: 300, 300
+                            size: dp(300), dp(300)
 
                         SemiCircle
                             id: e_half
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.width - 100, root.height - 150,
+                            center: root.width - dp(100), root.height - dp(150)
                             size_hint: None, None
-                            size: 300, 300
+                            size: dp(300), dp(300)
 
                         SemiCircle
                             id: s_half
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x - 200, root.center_y - 100,
+                            center: root.center_x - dp(200), root.center_y - dp(100)
                             size_hint: None, None
-                            size: 100, 100
+                            size: dp(100), dp(100)
 
                         SemiCircle
                             id: ft_half
                             color: app.theme_cls.primary_dark
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x - 200, root.center_y + 250,
+                            center: root.center_x - dp(200), root.center_y + dp(250)
                             size_hint: None, None
-                            size: 100, 100
+                            size: dp(100), dp(100)
 
                         SemiCircle
                             id: f_half
                             color: app.theme_cls.primary_light
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x + 200, root.center_y - 250,
+                            center: root.center_x + dp(200), root.center_y - dp(250)
                             size_hint: None, None
-                            size: 50, 50
+                            size: dp(50), dp(50)
 
                         SemiCircle
                             id: t_half
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x + 200, root.center_y + 250,
+                            center: root.center_x + dp(200), root.center_y + dp(250)
                             size_hint: None, None
-                            size: 25, 25
+                            size: dp(25), dp(25)
 
                         SemiCircle
                             id: first_half
@@ -741,9 +763,59 @@ class CarPos(MDApp):
     upper_left = False
     lower_right = False
 
+    transition = None
+
+    def set_first_start_transition(self):
+        with open('settings/sett.json') as f:
+            sett = json.load(f)
+        if sett["transition"] == "slide":
+            self.transition = SlideTransition()
+        elif sett["transition"] == "card":
+            self.transition = CardTransition()
+        elif sett["transition"] == "swap":
+            self.transition = SwapTransition()
+        elif sett["transition"] == "fade":
+            self.transition = FadeTransition()
+        elif sett["transition"] == "fallout":
+            self.transition = FallOutTransition()
+        elif sett["transition"] == "wipe":
+            self.transition = WipeTransition()
+        elif sett["transition"] == "rise":
+            self.transition = RiseInTransition()
+
     def first_start(self, *_):
+        self.root.ids.sm.transition = self.transition
         self.root.ids.sm.current = 'scr 1'
         self.set_decorations()
+        self.root.ids.sm.transition = SlideTransition()
+
+    def change_first_start_transition(self):
+
+        self.transition = next(self.transitions)
+
+        if isinstance(self.transition, FadeTransition):
+            t = "fade"
+        elif isinstance(self.transition, SlideTransition):
+            t = "slide"
+        elif isinstance(self.transition, CardTransition):
+            t = "card"
+        elif isinstance(self.transition, SwapTransition):
+            t = "swap"
+        elif isinstance(self.transition, FallOutTransition):
+            t = "fallout"
+        elif isinstance(self.transition, WipeTransition):
+            t = "wipe"
+        elif isinstance(self.transition, RiseInTransition):
+            t = "rise"
+
+        with open('settings/sett.json', 'r+') as f:
+            sett = json.load(f)
+            sett['transition'] = t
+            f.seek(0)
+            json.dump(sett, f, indent=4)
+            f.truncate()
+
+        toast(text=t+' set')
 
     def request_android_permissions(self):
 
@@ -764,6 +836,8 @@ class CarPos(MDApp):
 
     def build(self):
         Window.bind(on_keyboard=self.back_key_handler)
+        self.transitions = iter(TRANSITIONS)
+        self.set_first_start_transition()
         if platform == "android":
             self.request_android_permissions()
         Builder.load_string(KV)
@@ -985,16 +1059,20 @@ class CarPos(MDApp):
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
 
+        if icon == 'transition':
+            self.change_first_start_transition()
+            return
+
         if platform in ('win', 'linux', 'macos') and icon == 'navigation':
             url = \
-                f"https://www.google.com/maps/search/@{lon},{lat},21z/"
+                f"{URL}{lon},{lat},21z/"
 
             webbrowser.open(url)
+            return
 
         elif platform == 'android' and\
             icon != 'palette' and\
                 icon != 'set-left-right':
-
             if icon == 'mail':
                 Clock.schedule_once(self.contact_developer, .5)
             elif icon == 'walk':
@@ -1004,6 +1082,7 @@ class CarPos(MDApp):
                 return True
             elif icon == 'share-variant':
                 Clock.schedule_once(self.helper, .5)
+
         if icon == 'history':
             self.root.ids.sm.current = 'scr 3'
         elif icon == 'palette':
@@ -1048,7 +1127,7 @@ class CarPos(MDApp):
     @run_on_ui_thread
     def share(self):
         if self.loca:
-            url = f"https://www.google.com/maps/search/@{self.loca[0]},{self.loca[1]},10z/"
+            url = f"{URL}{self.loca[0]},{self.loca[1]},10z/"
             sendIntent = Intent()
             sendIntent.setAction(Intent.ACTION_SEND)
             sendIntent.putExtra(Intent.EXTRA_TEXT, String(url))
@@ -1158,6 +1237,7 @@ class CarPos(MDApp):
             self.root.ids.r.color = [0, 0, 0, 1]
         else:
             self.root.ids.r.color = [1, 1, 1, 1]
+
         sett = None
 
     def set_decorations(self):
@@ -1187,7 +1267,8 @@ class CarPos(MDApp):
             "palette": "Change the color",
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
-            "car": "Set the plate"
+            "car": "Set the plate",
+            "transition": "New transition"
         }
         for icon_name in icons_item:
             self.root.ids.content_drawer.ids.md_list.add_widget(
