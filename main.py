@@ -20,10 +20,8 @@ from kivy.properties import StringProperty, ListProperty,\
     ObjectProperty, NumericProperty, ColorProperty
 
 from kivy.uix.screenmanager import (
-    Screen, CardTransition,
-    SwapTransition, SlideTransition,
-    FadeTransition, FallOutTransition,
-    WipeTransition, RiseInTransition
+    Screen, SlideTransition,
+    FallOutTransition, RiseInTransition
     )
 
 from kivy.lang import Builder
@@ -52,12 +50,6 @@ BUBBLE_COLORS = [
     [182/255, 40/255, 247/255, 1],
     [79/255, 247/255, 180/255, 1]
     ]
-
-TRANSITIONS = [
-    CardTransition(),
-    SwapTransition(), SlideTransition(),
-    FadeTransition(), FallOutTransition(),
-    WipeTransition(), RiseInTransition()]
 
 URL = "https://www.google.com/maps/search/@"
 
@@ -297,7 +289,7 @@ KV = """
         ScreenManager:
             id: sm
             MDScreen:
-
+                md_bg_color: 0, 0, 0, 1
             Screen:
                 name: 'scr 1'
                 id: scr1
@@ -764,59 +756,16 @@ class CarPos(MDApp):
     lower_right = False
 
     transition = None
-    t = 'fallout'
-
-    def set_first_start_transition(self):
-        with open('settings/sett.json') as f:
-            sett = json.load(f)
-        if sett["transition"] == "slide":
-            self.transition = SlideTransition()
-        elif sett["transition"] == "card":
-            self.transition = CardTransition()
-        elif sett["transition"] == "swap":
-            self.transition = SwapTransition()
-        elif sett["transition"] == "fade":
-            self.transition = FadeTransition()
-        elif sett["transition"] == "fallout":
-            self.transition = FallOutTransition()
-        elif sett["transition"] == "wipe":
-            self.transition = WipeTransition()
-        elif sett["transition"] == "rise":
-            self.transition = RiseInTransition()
 
     def first_start(self, *_):
-        self.root.ids.sm.transition = self.transition
-        self.root.ids.sm.current = 'scr 1'
+
+        self.root.ids.sm.transition = FallOutTransition() \
+            if self.theme_cls.theme_style == 'Dark' else RiseInTransition()
+
         self.set_decorations()
+        self.root.ids.sm.current = 'scr 1'
+
         self.root.ids.sm.transition = SlideTransition()
-
-    def change_first_start_transition(self):
-
-        self.transition = next(self.transitions)
-
-        if isinstance(self.transition, FadeTransition):
-            self.t = "fade"
-        elif isinstance(self.transition, SlideTransition):
-            self.t = "slide"
-        elif isinstance(self.transition, CardTransition):
-            self.t = "card"
-        elif isinstance(self.transition, SwapTransition):
-            self.t = "swap"
-        elif isinstance(self.transition, FallOutTransition):
-            self.t = "fallout"
-        elif isinstance(self.transition, WipeTransition):
-            self.t = "wipe"
-        elif isinstance(self.transition, RiseInTransition):
-            self.t = "rise"
-
-        with open('settings/sett.json', 'r+') as f:
-            sett = json.load(f)
-            sett['transition'] = self.t
-            f.seek(0)
-            json.dump(sett, f, indent=4)
-            f.truncate()
-
-        toast(text=self.t+' set')
 
     def request_android_permissions(self):
 
@@ -837,8 +786,7 @@ class CarPos(MDApp):
 
     def build(self):
         Window.bind(on_keyboard=self.back_key_handler)
-        self.transitions = iter(TRANSITIONS)
-        self.set_first_start_transition()
+
         if platform == "android":
             self.request_android_permissions()
         Builder.load_string(KV)
@@ -1013,11 +961,9 @@ class CarPos(MDApp):
             window.getDecorView().setSystemUiVisibility(0)
 
     def on_start(self):
-
         self.set_theme()
         # if platform == 'android':
         #     mActivity.removeLoadingScreen()
-
         self.create_content_drawer()
         self.create_dialogs()
         self.get_last_location()
@@ -1059,10 +1005,6 @@ class CarPos(MDApp):
         # Animation.cancel_all(self.root)
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
-
-        if icon == 'transition':
-            self.change_first_start_transition()
-            return
 
         if platform in ('win', 'linux', 'macos') and icon == 'navigation':
             url = \
@@ -1219,7 +1161,6 @@ class CarPos(MDApp):
                 "car": self.car_image,
                 "drawer": self.anchor,
                 "plate": self.plate,
-                "transition": self.t
                 }
         with open('settings/sett.json', 'w') as f:
             json.dump(sett, f, indent=4)
@@ -1269,8 +1210,7 @@ class CarPos(MDApp):
             "palette": "Change the color",
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
-            "car": "Set the plate",
-            "transition": "New transition"
+            "car": "Set the plate"
         }
         for icon_name in icons_item:
             self.root.ids.content_drawer.ids.md_list.add_widget(
