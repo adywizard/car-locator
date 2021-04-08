@@ -17,7 +17,7 @@ Otherwise already built app can be found in the bin folder.
 
 ### requirements:
 
-The app in the bin folder was built with kivy==2.0.0 and kivymd==0.402.2.dev0 and modifyed version of python for android because of the above issue.
+The app in the bin folder was built with kivy==2.0.0 and kivymd==0.104.2.dev0 and modifyed version of python for android because of the above issue.
 
 
 All other requirements can be found in buildozer.spec file
