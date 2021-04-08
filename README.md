@@ -4,7 +4,7 @@ Car locator android app created with kivy/kivymd
 
 ## This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-![](screen.gif)
+![](gifs/screen.gif)
 
 ## How to build
 
@@ -26,4 +26,4 @@ All other requirements can be found in buildozer.spec file
 
 Added shader animation instead of simple circles and lottie animation instead of static preplash image
 
-![](screen2.gif)
+![](gifs/screen2.gif)
