@@ -2,13 +2,15 @@
 
 Car locator android app created with kivy/kivymd
 
+## This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
+
 ![](screen.gif)
 
 ## How to build
 
-If you want to build this app (last version) your self, you'll have to set p4a = develop in buildozer.spec if it doesent compile is due to https://github.com/kivy/kivy/issues/7398 and likely you'll have to make changes at your own. (Manualy add lottie support to your project).
+If you want to build this app (last version) your self, you'll have to set p4a = develop in buildozer.spec if it doesen't compile is due to https://github.com/kivy/kivy/issues/7398 and likely you'll have to make changes at your own. (Manually add lottie support to your project).
 
-else if you want to build previus version of the app just rename main.py to something else and main_with_circle_animation.py to main.py
+Else if you want to build previus version of the app just rename main.py to something else and main_with_circle_animation.py to main.py
 then buildozer android build.
 
 Otherwise already built app can be found in the bin folder.

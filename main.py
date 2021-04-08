@@ -48,7 +48,9 @@ BUBBLE_COLORS = [
     [235/255, 217/255, 138/255, 1],
     [131/255, 138/255, 242/255, 1],
     [182/255, 40/255, 247/255, 1],
-    [79/255, 247/255, 180/255, 1]
+    [79/255, 247/255, 180/255, 1],
+    [176255, 181/255, 80/255, 1],
+    [67/255, 57/255, 145/255, 1]
     ]
 
 URL = "https://www.google.com/maps/search/@"
@@ -323,25 +325,32 @@ KV = """
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.x + dp(25), root.y + dp(100),
+                            center: root.x + dp(25), root.y + dp(25),
                             size_hint: None, None
-                            size: dp(300), dp(300)
+                            size: dp(250), dp(250)
 
                         SemiCircle
                             id: e_half
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.width - dp(100), root.height - dp(150)
+
+                            center: root.width - dp(100), \
+                                root.height - dp(150)
+
                             size_hint: None, None
-                            size: dp(300), dp(300)
+                            size: dp(250), dp(250)
 
                         SemiCircle
                             id: s_half
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x - dp(200), root.center_y - dp(100)
+
+                            center:
+                                root.center_x - dp(200), \
+                                    root.center_y - dp(100)
+
                             size_hint: None, None
                             size: dp(100), dp(100)
 
@@ -350,7 +359,10 @@ KV = """
                             color: app.theme_cls.primary_dark
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x - dp(200), root.center_y + dp(250)
+
+                            center: root.center_x - dp(200), \
+                                root.center_y + dp(250)
+
                             size_hint: None, None
                             size: dp(100), dp(100)
 
@@ -359,7 +371,10 @@ KV = """
                             color: app.theme_cls.primary_light
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x + dp(200), root.center_y - dp(250)
+
+                            center: root.center_x + dp(150), \
+                                root.center_y - dp(250)
+
                             size_hint: None, None
                             size: dp(50), dp(50)
 
@@ -368,27 +383,30 @@ KV = """
                             color: app.theme_cls.primary_color
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x + dp(200), root.center_y + dp(250)
+
+                            center: root.center_x + dp(200), \
+                                root.center_y + dp(200)
+
                             size_hint: None, None
-                            size: dp(25), dp(25)
+                            size: dp(50), dp(50)
 
                         SemiCircle
                             id: first_half
                             color: app.theme_cls.primary_dark
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x, root.center_y - 150
+                            center: root.center_x, root.center_y - dp(150)
                             size_hint: None, None
-                            size: 150, 150
+                            size: dp(150), dp(150)
 
                         SemiCircle
                             id: second_half
                             color: app.theme_cls.primary_light
                             angle_start: 0
                             angle_end: 360
-                            center: root.center_x, root.center_y + 150
+                            center: root.center_x, root.center_y + dp(150)
                             size_hint: None, None
-                            size: 100, 100
+                            size: dp(100), dp(100)
 
 
                 BoxLayout:
