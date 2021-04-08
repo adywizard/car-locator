@@ -410,15 +410,18 @@ KV = """
 
                 MDFloatLayout:
                     id: banner
+                    opacity: 0
                     size_hint_y: None
                     height: dp(64)
                     pos: scr1.x, scr1.height
                     md_bg_color: 1, 1, 1, 1
                     Label:
+                        id: b_lbl
                         color: 0, 0, 0, 1
                         text: 'Fetching current coordinates'
                         pos_hint: {'center_x':.4, 'center_y':.5}
                         halign: 'center'
+                        opacity: 0
                     MDSpinner:
                         id: spinner
                         size_hint: None, None
@@ -944,16 +947,20 @@ class CarPos(MDApp):
 
     def show_banner(self):
         self.root.ids.spinner.active = True
+        self.root.ids.banner.opacity = 1
+        self.root.ids.b_lbl.opacity = 1
         a = Animation(
             y=self.root.height-self.root.ids.toolbar.height-self.root.ids.banner.height,
-            d=.2, t='in_out_back'
+            d=.25, t='in_out_back'
             )
         a.start(self.root.ids.banner)
 
     def hide_banner(self):
-        self.root.ids.spinner.active = False
-        a = Animation(y=self.root.height, d=.2, t='in_out_back')
+        a = Animation(y=self.root.height, d=.25, t='in_out_back')
         a.start(self.root.ids.banner)
+        self.root.ids.spinner.active = False
+        self.root.ids.b_lbl.opacity = 0
+        self.root.ids.banner.opacity = 0
 
     @mainthread
     def on_location(self, **kwargs):
