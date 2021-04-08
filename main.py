@@ -884,7 +884,7 @@ class CarPos(MDApp):
                 context.getSystemService(Context.LOCATION_SERVICE))
             if locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER):
                 if not caller:
-                    toast('GPS on', 3, True, 80)
+                    toast('GPS on', True, 80)
             else:
                 self.dialog.open()
 
