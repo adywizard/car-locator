@@ -884,7 +884,7 @@ class CarPos(MDApp):
                 context.getSystemService(Context.LOCATION_SERVICE))
             if locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER):
                 if not caller:
-                    toast('GPS on', True, 80)
+                    toast('GPS already on', True, 80)
             else:
                 self.dialog.open()
 
@@ -923,7 +923,7 @@ class CarPos(MDApp):
         self.loca = [0, 0]
         self.remove_all_items()
 
-    def save_current_loc(self):
+    def save_current_loc(self, *_):
         idx = self.accur.index(min(self.accur))
         self.loca = self.lat_lon[idx]
         now = self.get_datetime()
@@ -939,7 +939,15 @@ class CarPos(MDApp):
 
             f.seek(0)
             json.dump(loc, f)
-        self.create_history()
+
+        self.root.ids.md_list.add_widget(
+                SwipeToDeleteItem(
+                    text="Location",
+                    secondary_text=now,
+                    tertiary_text=f"longitude {self.loca[0]} latitude {self.loca[1]}"
+                    )
+            )
+        # self.create_history()
         # Logger.info('accuracy: ' + str(self.accur))
         # Logger.info('current location: ' + str(self.loca))
         # Logger.info('all location values: ' + str(self.lat_lon))
@@ -956,11 +964,9 @@ class CarPos(MDApp):
         a.start(self.root.ids.banner)
 
     def hide_banner(self):
-        a = Animation(y=self.root.height, d=.25, t='in_out_back')
+        a = Animation(y=self.root.height, d=.5, t='out_back')
+        a.bind(on_complete=self.stop_and_save)
         a.start(self.root.ids.banner)
-        self.root.ids.spinner.active = False
-        self.root.ids.b_lbl.opacity = 0
-        self.root.ids.banner.opacity = 0
 
     @mainthread
     def on_location(self, **kwargs):
@@ -974,11 +980,18 @@ class CarPos(MDApp):
                 self.lat_lon.append(loc)
         else:
             self.hide_banner()
-            self.stop()
-            if not self.saved:
-                toast("Current location saved", True, 80)
-                self.saved = True
-                self.save_current_loc()
+
+    def stop_and_save(self, *_):
+        self.root.ids.spinner.active = False
+        self.root.ids.b_lbl.opacity = 0
+        self.root.ids.banner.opacity = 0
+        self.stop()
+        if not self.saved:
+            toast("Current location saved", True, 80)
+            self.saved = True
+
+            Clock.schedule_once(self.save_current_loc, 0)
+            # self.save_current_loc()
 
     def remove_item(self, instance):
         self.root.ids.md_list.remove_widget(instance)
