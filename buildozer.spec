@@ -85,7 +85,7 @@ fullscreen = 0
 # see https://lottiefiles.com/ for examples and https://airbnb.design/lottie/
 # for general documentation.
 # Lottie files can be created using various tools, like Adobe After Effect or Synfig.
-android.presplash_lottie = "map-location.json"
+android.presplash_lottie = "lottie/map-location.json"
 
 # (list) Permissions
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WAKE_LOCK,ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION

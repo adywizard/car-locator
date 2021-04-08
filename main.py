@@ -408,6 +408,24 @@ KV = """
                             size_hint: None, None
                             size: dp(100), dp(100)
 
+                MDFloatLayout:
+                    id: banner
+                    size_hint_y: None
+                    height: dp(64)
+                    pos: scr1.x, scr1.height
+                    md_bg_color: 1, 1, 1, 1
+                    Label:
+                        color: 0, 0, 0, 1
+                        text: 'Fetching current coordinates'
+                        pos_hint: {'center_x':.4, 'center_y':.5}
+                        halign: 'center'
+                    MDSpinner:
+                        id: spinner
+                        size_hint: None, None
+                        size: dp(32), dp(32)
+                        pos_hint: {'center_x':.85, 'center_y':.5}
+                        active: False
+
 
                 BoxLayout:
                     orientation: 'vertical'
@@ -431,7 +449,7 @@ KV = """
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .65}
                             on_release:
-                                # sm.current = 'scr 4'
+
                                 app.turn_on_gps()
 
                         MDFillRoundFlatIconButton:
@@ -447,6 +465,7 @@ KV = """
                                 app.accur.clear()
                                 app.lat_lon.clear()
                                 app.saved = False
+                                app.show_banner()
                                 app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
@@ -795,9 +814,9 @@ class CarPos(MDApp):
                 # toast("All permitions granted.")
                 self.permit = True
             else:
-                toast("Permessions denied")
+                toast("Permessions denied", True, 80)
                 self.permit = False
-                toast("This app can't work without GPS")
+                toast("This app can't work without GPS", True, 80)
 
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
                              Permission.ACCESS_FINE_LOCATION], callback)
@@ -862,7 +881,7 @@ class CarPos(MDApp):
                 context.getSystemService(Context.LOCATION_SERVICE))
             if locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER):
                 if not caller:
-                    toast('GPS on', 3)
+                    toast('GPS on', 3, True, 80)
             else:
                 self.dialog.open()
 
@@ -923,6 +942,19 @@ class CarPos(MDApp):
         # Logger.info('all location values: ' + str(self.lat_lon))
         # Logger.info('saved location: ' + str(loc))
 
+    def show_banner(self):
+        self.root.ids.spinner.active = True
+        a = Animation(
+            y=self.root.height-self.root.ids.toolbar.height-self.root.ids.banner.height,
+            d=.2, t='in_out_back'
+            )
+        a.start(self.root.ids.banner)
+
+    def hide_banner(self):
+        self.root.ids.spinner.active = False
+        a = Animation(y=self.root.height, d=.2, t='in_out_back')
+        a.start(self.root.ids.banner)
+
     @mainthread
     def on_location(self, **kwargs):
         loc = []
@@ -934,9 +966,10 @@ class CarPos(MDApp):
                     self.accur.append(v)
                 self.lat_lon.append(loc)
         else:
+            self.hide_banner()
             self.stop()
             if not self.saved:
-                toast("Current location saved")
+                toast("Current location saved", True, 80)
                 self.saved = True
                 self.save_current_loc()
 
@@ -1067,7 +1100,7 @@ class CarPos(MDApp):
         if intent.resolveActivity(mActivity.getPackageManager()):
             mActivity.startActivity(intent)
         else:
-            toast('No mail app found!', 3)
+            toast('No mail app found!', True, 80)
 
     @mainthread
     def open_navigation(self, lon, lat, mode, *largs):
@@ -1079,7 +1112,9 @@ class CarPos(MDApp):
         if intent.resolveActivity(mActivity.getPackageManager()):
             mActivity.startActivity(intent)
         else:
-            toast('No google maps found!\nInstall it from Play Store', 3)
+            toast(
+                'No google maps found!\nInstall it from Play Store', True, 80
+                )
 
     @mainthread
     def helper(self, *_):
@@ -1096,7 +1131,7 @@ class CarPos(MDApp):
             shareIntent = Intent.createChooser(sendIntent, String('Share...'))
             mActivity.startActivity(shareIntent)
         else:
-            toast('No location')
+            toast('No location', True, 80)
 
     def create_dialogs(self):
         if not self.map_dialog:
@@ -1218,7 +1253,7 @@ class CarPos(MDApp):
                     on_location=self.on_location, on_status=self.on_status)
             except NotImplementedError:
                 self.gps_status = 'GPS not available'
-                toast(self.gps_status, 3)
+                toast(self.gps_status, True, 80)
 
     def create_content_drawer(self):
         icons_item = {
