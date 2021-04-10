@@ -2,7 +2,7 @@
 
 Car locator android app created with kivy/kivymd
 
-## This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
+### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
 ![](gifs/screen.gif)
 

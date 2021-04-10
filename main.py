@@ -184,6 +184,7 @@ KV = """
     text_color: app.theme_cls.primary_color
     on_release:
         self.parent.parent.parent.parent.dismiss()
+        app.hide_banner()
 
 <Accept>:
     text_color: app.theme_cls.primary_color
@@ -468,7 +469,7 @@ KV = """
                                 app.accur.clear()
                                 app.lat_lon.clear()
                                 app.saved = False
-                                app.show_banner()
+                                
                                 app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
@@ -863,6 +864,7 @@ class CarPos(MDApp):
         if platform == 'android' and self.permit:
             self.turn_on_gps('start')
             gps.start(minTime, minDistance)
+            self.show_banner()
         elif platform == 'android' and not self.permit:
             self.request_android_permissions()
 
@@ -873,16 +875,22 @@ class CarPos(MDApp):
     def open_gps_settings(self, *_):
         self.turn_on_gps('start')
 
+    def is_location_enabled(self):
+        context = cast(
+                'android.content.Context',
+                mActivity.getApplicationContext())
+
+        locationManager = cast(
+                'android.location.LocationManager',
+                context.getSystemService(Context.LOCATION_SERVICE))
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
     @mainthread
     def turn_on_gps(self, caller=''):
         if platform == 'android':
-            context = cast(
-                'android.content.Context',
-                mActivity.getApplicationContext())
-            locationManager = cast(
-                'android.location.LocationManager',
-                context.getSystemService(Context.LOCATION_SERVICE))
-            if locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER):
+
+            if self.is_location_enabled():
                 if not caller:
                     toast('GPS already on', True, 80)
             else:
@@ -924,14 +932,19 @@ class CarPos(MDApp):
         self.remove_all_items()
 
     def save_current_loc(self, *_):
+
+        if not self.is_location_enabled():
+            return
+
         idx = self.accur.index(min(self.accur))
         self.loca = self.lat_lon[idx]
         now = self.get_datetime()
+        number_of_locations = 0
         with open('locations/loc.json', 'r+') as f:
             loc = json.load(f)
             loc["datetime"].append(now)
-
-            if len(loc['loc']) < 20:
+            number_of_locations = len(loc['loc'])
+            if number_of_locations < 20:
                 loc['loc'].append(self.loca)
             else:
                 loc['loc'].pop(0)
@@ -939,6 +952,11 @@ class CarPos(MDApp):
 
             f.seek(0)
             json.dump(loc, f)
+
+        if number_of_locations >= 20:
+            w = self.root.ids.md_list.children[0]
+            Logger.info('Widget children: ' + str(w))
+            self.root.ids.md_list.remove_widget(w)
 
         self.root.ids.md_list.add_widget(
                 SwipeToDeleteItem(
@@ -986,7 +1004,7 @@ class CarPos(MDApp):
         self.root.ids.b_lbl.opacity = 0
         self.root.ids.banner.opacity = 0
         self.stop()
-        if not self.saved:
+        if not self.saved and self.is_location_enabled():
             toast("Current location saved", True, 80)
             self.saved = True
 
