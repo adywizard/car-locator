@@ -468,8 +468,7 @@ KV = """
                             on_release:
                                 app.accur.clear()
                                 app.lat_lon.clear()
-                                app.saved = False
-                                
+                                app.saved = False 
                                 app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
@@ -807,6 +806,7 @@ class CarPos(MDApp):
         self.root.ids.sm.current = 'scr 1'
 
         self.root.ids.sm.transition = SlideTransition()
+        self.root.ids.sm.transition.direction = 'up'
 
     def request_android_permissions(self):
 
@@ -955,7 +955,6 @@ class CarPos(MDApp):
 
         if number_of_locations >= 20:
             w = self.root.ids.md_list.children[0]
-            Logger.info('Widget children: ' + str(w))
             self.root.ids.md_list.remove_widget(w)
 
         self.root.ids.md_list.add_widget(
@@ -1051,22 +1050,19 @@ class CarPos(MDApp):
 
     def on_start(self):
         self.set_theme()
-        # if platform == 'android':
-        #     mActivity.removeLoadingScreen()
         self.create_content_drawer()
         self.create_dialogs()
         self.get_last_location()
         self.create_history()
         self.configure_gps()
-        # self.root.ids.shader_widget.fs = shader_watter_bubble
+
         Clock.schedule_once(self.animate_colors, 3)
         Clock.schedule_once(self.animate_lower_pos, 3)
         Clock.schedule_once(
             self.first_start, 2)
-        # Clock.schedule_once(self.size_animation_one, 2)
 
     def on_pause(self, *_):
-        # Animation.cancel_all(self.root)
+
         files = glob.glob('/cache/*.png')
         for f in files:
             try:
