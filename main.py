@@ -38,6 +38,8 @@ from kivy.graphics import (
     ClearColor, ClearBuffers, Rectangle
 )
 from kivy.uix.floatlayout import FloatLayout
+from blue_devices_screen.devices import BlueDevicesScreen
+
 
 BUBBLE_COLORS = [
     [214/255, 131/255, 54/255, 1],
@@ -58,13 +60,18 @@ URL = "https://www.google.com/maps/search/@"
 if platform == 'android':
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
-    from android import mActivity
+    from android import activity
+
+    from blue.blue import BroadcastReceiver
 
     Intent = autoclass('android.content.Intent')
+    BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
     Uri = autoclass('android.net.Uri')
     Context = autoclass('android.content.Context')
     String = autoclass('java.lang.String')
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    mActivity = PythonActivity.mActivity
+    WindowManager = autoclass('android.view.WindowManager')
     AColor = autoclass("android.graphics.Color")
     LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
     Settings = autoclass('android.provider.Settings')
@@ -72,6 +79,8 @@ if platform == 'android':
     Calendar = autoclass('java.util.Calendar')
     SimpleDateFormat = autoclass('java.text.SimpleDateFormat')
     View = autoclass('android.view.View')
+    String = autoclass('java.lang.String')
+    Boolean = autoclass('java.lang.Boolean')
 else:
     import webbrowser
 
@@ -468,7 +477,7 @@ KV = """
                             on_release:
                                 app.accur.clear()
                                 app.lat_lon.clear()
-                                app.saved = False 
+                                app.saved = False
                                 app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
@@ -503,6 +512,10 @@ KV = """
                             id: lbl
                             pos_hint: {'center_x': .5, 'center_y': .2}
                             halign: 'center'
+
+            BlueDevicesScreen:
+                name: 'blue'
+                id: blue
 
             Screen:
                 name: 'scr 2'
@@ -699,7 +712,7 @@ class SwipeToDeleteItem(MDCardSwipe):
         app.loca = [lo, la]
         app.root.ids.mapview.center_on(lo, la)
         app.add_mark(lo, la)
-        app.root.ids.sm.transition.direction = 'up'
+        # app.root.ids.sm.transition.direction = 'up'
         app.root.ids.sm.current = 'scr 2'
 
 
@@ -797,6 +810,66 @@ class CarPos(MDApp):
 
     transition = None
 
+    br = None
+
+    paired_car = ""
+    is_car_paired = False
+
+    def on_new_intent(self, intent):
+        get_location = intent.getStringExtra("getLocation")
+        if get_location == "true":
+            self.stop_service()
+
+    def on_recive(self, context, intent):
+        name = ''
+        action = intent.getAction()
+        parcable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+        device = cast(BluetoothDevice, parcable)
+        name = device.getName()
+
+        if action == BluetoothDevice.ACTION_ACL_CONNECTED:
+
+            if name == self.paired_car and not self.is_car_paired:
+                toast(f'connected to {name} Starting service', True, 80)
+                activity.bind(on_new_intent=self.on_new_intent)
+                self.start_service(name)
+
+    def unregister_broadcast_receiver(self):
+        if self.br and platform == 'android':
+            self.br.stop()
+            self.br = None
+
+    @mainthread
+    def stop_service(self):
+        mActivity.stop_service()
+        activity.unbind(on_new_intent=self.on_new_intent)
+        self.start(1000, 0)
+
+    @mainthread
+    def start_service(self, device):
+        mActivity.start_service(
+                'waiting for disconnection',
+                'location service',
+                device
+                )
+
+    def register_broadcats_receiver(self):
+        if not self.br and platform == 'android':
+
+            ''' 'SCAN_RESULTS_AVAILABLE_ACTION',
+                    'ACTION_STATE_CHANGED',
+                    'ACTION_ACL_CONNECTED',
+                    'ACTION_ACL_DISCONNECTED',
+                    'ACTION_BOND_STATE_CHANGED',
+                    'ACTION_ACL_DISCONNECT_REQUESTED' '''
+
+            self.br = BroadcastReceiver(
+                self.on_recive, actions=[
+                    'ACTION_ACL_CONNECTED',
+                    'ACTION_ACL_DISCONNECTED'
+                    ])
+            self.br.start()
+
     def first_start(self, *_):
 
         self.root.ids.sm.transition = FallOutTransition() \
@@ -843,9 +916,11 @@ class CarPos(MDApp):
 
             self.root.ids.sm.current = 'scr 1'
 
+        elif self.root.ids.sm.current == 'blue':
+            self.root.ids.sm.current = 'scr 1'
+
         elif self.root.ids.sm.current == 'scr 1':
             mActivity.moveTaskToBack(True)
-            Clock.schedule_once(self.on_pause, 1)
 
     def back_key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 in [27, 1001]:
@@ -934,6 +1009,7 @@ class CarPos(MDApp):
     def save_current_loc(self, *_):
 
         if not self.is_location_enabled():
+            self.saved = False
             return
 
         idx = self.accur.index(min(self.accur))
@@ -956,19 +1032,23 @@ class CarPos(MDApp):
         if number_of_locations >= 20:
             w = self.root.ids.md_list.children[0]
             self.root.ids.md_list.remove_widget(w)
-
+        t_text = f"longitude {self.loca[0]} latitude {self.loca[1]}"
         self.root.ids.md_list.add_widget(
                 SwipeToDeleteItem(
                     text="Location",
                     secondary_text=now,
-                    tertiary_text=f"longitude {self.loca[0]} latitude {self.loca[1]}"
+                    tertiary_text=t_text
                     )
             )
+        Clock.schedule_once(self.allowe_scanning, 2.5)
         # self.create_history()
         # Logger.info('accuracy: ' + str(self.accur))
         # Logger.info('current location: ' + str(self.loca))
         # Logger.info('all location values: ' + str(self.lat_lon))
         # Logger.info('saved location: ' + str(loc))
+
+    def allowe_scanning(self, _):
+        self.saved = False
 
     def show_banner(self):
         self.root.ids.spinner.active = True
@@ -1056,6 +1136,8 @@ class CarPos(MDApp):
         self.create_history()
         self.configure_gps()
 
+        self.register_broadcats_receiver()
+
         Clock.schedule_once(self.animate_colors, 3)
         Clock.schedule_once(self.animate_lower_pos, 3)
         Clock.schedule_once(
@@ -1069,10 +1151,12 @@ class CarPos(MDApp):
                 os.remove(f)
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
+        self.unregister_broadcast_receiver()
         return True
 
     def on_resume(self):
         self.get_last_location()
+        self.register_broadcats_receiver()
         # Clock.schedule_once(self.size_animation_one, 2)
         # self.size_animation_one()
 
@@ -1103,6 +1187,7 @@ class CarPos(MDApp):
                 icon != 'set-left-right':
             if icon == 'mail':
                 Clock.schedule_once(self.contact_developer, .5)
+                return
             elif icon == 'walk':
                 self.open_navigation(lon, lat, mode)
                 Clock.schedule_once(partial(
@@ -1110,9 +1195,13 @@ class CarPos(MDApp):
                 return True
             elif icon == 'share-variant':
                 Clock.schedule_once(self.helper, .5)
+                return
 
         if icon == 'history':
             self.root.ids.sm.current = 'scr 3'
+        elif icon == 'bluetooth':
+            self.root.ids.sm.current = 'blue'
+            return
         elif icon == 'palette':
             Clock.schedule_once(self.theme_color_cahnge, .3)
             # self.theme_dialog.open()
@@ -1248,6 +1337,7 @@ class CarPos(MDApp):
                 "car": self.car_image,
                 "drawer": self.anchor,
                 "plate": self.plate,
+                "device": self.paired_car
                 }
         with open('settings/sett.json', 'w') as f:
             json.dump(sett, f, indent=4)
@@ -1262,6 +1352,7 @@ class CarPos(MDApp):
         self.car_image = sett["car"]
         self.anchor = sett["drawer"]
         self.plate = sett["plate"]
+        self.paired_car = sett["device"]
         app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
         if sett["theme_style"] == 'Dark':
             self.root.ids.r.color = [0, 0, 0, 1]
@@ -1297,11 +1388,13 @@ class CarPos(MDApp):
             "palette": "Change the color",
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
-            "car": "Set the plate"
+            "car": "Set the plate",
+            'bluetooth': self.paired_car
         }
         for icon_name in icons_item:
+            item = ItemDrawer(icon=icon_name, text=icons_item[icon_name])
             self.root.ids.content_drawer.ids.md_list.add_widget(
-                ItemDrawer(icon=icon_name, text=icons_item[icon_name])
+                item
             )
 
     def create_history(self):
