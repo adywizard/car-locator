@@ -1380,7 +1380,7 @@ class CarPos(MDApp):
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
             "car": "Set the plate",
-            'bluetooth': self.paired_car
+            'bluetooth': self.paired_car if self.paired_car else 'Choose car'
         }
         for icon_name in icons_item:
             item = ItemDrawer(icon=icon_name, text=icons_item[icon_name])
