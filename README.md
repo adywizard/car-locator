@@ -4,6 +4,17 @@ Car locator android app created with kivy/kivymd
 
 ### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
+## Version 0.1.2
+
+Added shader animation instead of simple circles and lottie animation instead of static preplash image,
+
+(experimental) added automatic location save on bluetooth unpaired from choosen device.
+
+![](gifs/screen2.gif)
+
+
+## Version 0.1
+
 ![](gifs/screen.gif)
 
 ## How to build
@@ -20,10 +31,4 @@ Otherwise already built app can be found in the bin folder.
 The app in the bin folder was built with kivy==2.0.0 and kivymd==0.104.2.dev0 and modifyed version of python for android because of the above issue.
 
 
-All other requirements can be found in buildozer.spec file
-
-## Version 0.1.2
-
-Added shader animation instead of simple circles and lottie animation instead of static preplash image
-
-![](gifs/screen2.gif)
+All other requirements can be found in buildozer.spec file.

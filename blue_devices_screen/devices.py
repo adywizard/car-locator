@@ -7,7 +7,7 @@ from kivymd.uix.toolbar import MDToolbar
 from kivymd.uix.button import MDFloatingActionButton
 from kivymd.app import MDApp
 from kivymd.toast import toast
-from kivy.utils import platform
+from kivy.utils import platform, get_hex_from_color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.scrollview import ScrollView
@@ -18,12 +18,12 @@ from kivy.metrics import dp
 
 COLORS = [
     [153/255, 69/255, 255/255, 1],
-    [69/255, 255/255, 187/255, 1],
+    [187/255, 100/255, 217/255, 1],
     [255/255, 69/255, 150/255, 1],
     [255/255, 69/255, 69/255, 1],
-    [171/255, 255/255, 69/255, 1],
+    [100/255, 160/255, 217/255, 1],
     [255/255, 115/255, 69/255, 1],
-    [156/255, 255/255, 69/255, 1]
+    [217/255, 100/255, 166/255, 1]
 ]
 
 
@@ -40,12 +40,17 @@ class BlueDevicesScreen(MDScreen):
     def __init__(self, **kw):
         self.devices = []
         self.list_of_devices = None
+        self.toolbar = None
+        self.choosen_color = None
+        self.app = MDApp.get_running_app()
+
         if platform == 'android':
             self.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
             if not self.bluetoothAdapter:
                 toast("This device doesn't support bluetooth", 80, True)
         else:
             self.bluetoothAdapter = None
+
         Clock.schedule_once(self.post_init, 0)
         super().__init__(**kw)
 
@@ -60,17 +65,18 @@ class BlueDevicesScreen(MDScreen):
         self.refresh_btn = MDFloatingActionButton(
             icon='refresh',
             pos_hint={'center_x': .5, 'center_y': .5},
-            md_bg_color=MDApp.get_running_app().theme_cls.primary_color
+            md_bg_color=self.app.theme_cls.primary_color,
+            opacity=0
         )
         self.refresh_btn.bind(on_release=self.get_bluetooth_devices)
         btn_layout = FloatLayout(size_hint_y=None, height=dp(100))
         btn_layout.add_widget(self.refresh_btn)
 
         self.container = BoxLayout(orientation='vertical')
-        toolbar = MDToolbar(pos_hint={'top': 1})
-        toolbar.left_action_items = [
+        self.toolbar = MDToolbar(pos_hint={'top': 1})
+        self.toolbar.left_action_items = [
             'chevron-left', lambda x: self.switch_screen()],
-        self.container.add_widget(toolbar)
+        self.container.add_widget(self.toolbar)
         self.container.add_widget(box)
         self.container.add_widget(btn_layout)
 
@@ -91,9 +97,21 @@ class BlueDevicesScreen(MDScreen):
     def on_leave(self, *args):
         self.devices = []
         self.list_of_devices.clear_widgets()
-        Clock.schedule_once(MDApp.get_running_app().save_theme, 0)
+        Clock.schedule_once(self.app.save_theme, 0)
         Animation.cancel_all(self.refresh_btn)
+        Animation.cancel_all(self.toolbar)
+        self.toolbar.md_bg_color = self.app.theme_cls.primary_color
+        self.refresh_btn.md_bg_color = self.app.theme_cls.primary_color
         return super().on_leave(*args)
+
+    def on_pre_enter(self, *args):
+        Animation(opacity=1, d=1.5).start(self.refresh_btn)
+        return super().on_pre_enter(*args)
+
+    def on_pre_leave(self, *args):
+        self.app.set_decorations()
+        self.refresh_btn.opacity = 0
+        return super().on_pre_leave(*args)
 
     def get_bluetooth_devices(self, *_):
 
@@ -111,15 +129,28 @@ class BlueDevicesScreen(MDScreen):
                 self.enable_bluetooth()
 
     def save_device_name(self, widget):
-        app = MDApp.get_running_app()
-        app.paired_car = widget.text
-        app.root.ids.content_drawer.ids.md_list.children[0].text = widget.text
+
+        self.app.paired_car = widget.text
+
+        self.app.root.ids.content_drawer\
+            .ids.md_list.children[0].text = widget.text
+
         toast(f'{widget.text} is choosen to be listen for', True, 80)
 
     def switch_screen(self):
-        MDApp.get_running_app().root.ids.sm.current = 'scr 1'
+        self.app.root.ids.sm.current = 'scr 1'
+
+    def change_decorations(self, *_):
+
+        if platform == 'android':
+            statusbar = get_hex_from_color(self.choosen_color[:-1])
+            navbar = get_hex_from_color(self.choosen_color[:-1])
+            self.app.statusbar(statusbar, navbar)
 
     def animate_button_colors(self, *_):
-        a = Animation(md_bg_color=choice(COLORS), d=2.5)
-        a.bind(on_complete=self.animate_button_colors)
+        self.choosen_color = choice(COLORS)
+        a = Animation(md_bg_color=self.choosen_color, d=.3)
+        b = Animation(md_bg_color=self.choosen_color, d=.3)
+        a.bind(on_start=self.change_decorations)
         a.start(self.refresh_btn)
+        b.start(self.toolbar)
