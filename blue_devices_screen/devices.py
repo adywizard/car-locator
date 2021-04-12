@@ -7,6 +7,7 @@ from kivymd.uix.toolbar import MDToolbar
 from kivymd.uix.button import MDFloatingActionButton
 from kivymd.app import MDApp
 from kivymd.toast import toast
+
 from kivy.utils import platform, get_hex_from_color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -15,6 +16,7 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.metrics import dp
 
+# from kivymd.icon_definitions import md_icons
 
 COLORS = [
     [153/255, 69/255, 255/255, 1],
@@ -75,7 +77,11 @@ class BlueDevicesScreen(MDScreen):
         self.container = BoxLayout(orientation='vertical')
         self.toolbar = MDToolbar(pos_hint={'top': 1})
         self.toolbar.left_action_items = [
-            'chevron-left', lambda x: self.switch_screen()],
+            'chevron-left', lambda x: self.switch_screen()
+        ],
+        self.toolbar.right_action_items = [
+            'bluetooth-off', lambda x: self.clear_device()
+        ],
         self.container.add_widget(self.toolbar)
         self.container.add_widget(box)
         self.container.add_widget(btn_layout)
@@ -135,10 +141,15 @@ class BlueDevicesScreen(MDScreen):
         self.app.root.ids.content_drawer\
             .ids.md_list.children[0].text = widget.text
 
-        toast(f'{widget.text} is choosen to be listen for', True, 80)
+        toast(f'Listening for {widget.text}', True, 80)
 
     def switch_screen(self):
         self.app.root.ids.sm.current = 'scr 1'
+
+    def clear_device(self):
+        self.app.paired_car = ''
+        self.app.root.ids.content_drawer\
+            .ids.md_list.children[0].text = 'Choose car'
 
     def change_decorations(self, *_):
 
