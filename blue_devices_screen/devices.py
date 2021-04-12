@@ -63,7 +63,7 @@ class BlueDevicesScreen(MDScreen):
             md_bg_color=MDApp.get_running_app().theme_cls.primary_color
         )
         self.refresh_btn.bind(on_release=self.get_bluetooth_devices)
-        btn_layout = FloatLayout(size_hint_y=None, height=dp(150))
+        btn_layout = FloatLayout(size_hint_y=None, height=dp(100))
         btn_layout.add_widget(self.refresh_btn)
 
         self.container = BoxLayout(orientation='vertical')
@@ -101,6 +101,7 @@ class BlueDevicesScreen(MDScreen):
             if self.bluetoothAdapter.isEnabled():
                 results = self.bluetoothAdapter.getBondedDevices()
                 self.devices = results.toArray()
+                self.list_of_devices.clear_widgets()
 
                 for device in self.devices:
                     name = OneLineListItem(text=device.getName())

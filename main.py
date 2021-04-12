@@ -888,7 +888,7 @@ class CarPos(MDApp):
         def callback(permissions, results):
 
             if all([res for res in results]):
-                # toast("All permitions granted.")
+
                 self.permit = True
             else:
                 toast("Permessions denied", True, 80)
