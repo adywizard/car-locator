@@ -1,12 +1,12 @@
 {
-    "theme_style": "Dark",
-    "primary_palette": "Indigo",
+    "theme_style": "Light",
+    "primary_palette": "Blue",
     "alpha": [
         1
     ],
-    "mark": "imgs/Indigo.png",
-    "car": "imgs/Indigo-car.png",
+    "mark": "imgs/Blue.png",
+    "car": "imgs/Blue-car.png",
     "drawer": "left",
-    "plate": "XX ABCD YY",
-    "device": "Choos car"
+    "plate": "asssss",
+    "device": ""
 }

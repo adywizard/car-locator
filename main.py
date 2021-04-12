@@ -129,14 +129,8 @@ KV = """
 #: import colors kivymd.color_definitions.colors
 #: import Clock kivy.clock.Clock
 #: import SE kivy.effects.scroll.ScrollEffect
-#: import p kivy.utils.platform
 #: import MapView kivy_garden.mapview.MapView
-#: import randint random.randint
 #: import w kivy.core.window.Window
-
-#: set color_s '#'+colors[app.theme_cls.primary_palette]['700']
-#: set color_n '#'+colors[app.theme_cls.primary_palette]['500']
-#: set bluish 213/255, 221/255, 232/255, 1
 
 
 <SemiCircle>
@@ -712,7 +706,6 @@ class SwipeToDeleteItem(MDCardSwipe):
         app.loca = [lo, la]
         app.root.ids.mapview.center_on(lo, la)
         app.add_mark(lo, la)
-        # app.root.ids.sm.transition.direction = 'up'
         app.root.ids.sm.current = 'scr 2'
 
 
@@ -951,6 +944,9 @@ class CarPos(MDApp):
         self.turn_on_gps('start')
 
     def is_location_enabled(self):
+        if platform != 'android':
+            return
+
         context = cast(
                 'android.content.Context',
                 mActivity.getApplicationContext())
@@ -1041,11 +1037,6 @@ class CarPos(MDApp):
                     )
             )
         Clock.schedule_once(self.allowe_scanning, 2.5)
-        # self.create_history()
-        # Logger.info('accuracy: ' + str(self.accur))
-        # Logger.info('current location: ' + str(self.loca))
-        # Logger.info('all location values: ' + str(self.lat_lon))
-        # Logger.info('saved location: ' + str(loc))
 
     def allowe_scanning(self, _):
         self.saved = False

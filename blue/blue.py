@@ -11,7 +11,9 @@ Bundle = autoclass('android.os.Bundle')
 class BroadcastReceiver(object):
 
     class Callback(PythonJavaClass):
-        __javainterfaces__ = [JNI_NAMESPACE + '/GenericBroadcastReceiverCallback']
+        __javainterfaces__ = [
+            JNI_NAMESPACE + '/GenericBroadcastReceiverCallback'
+            ]
         __javacontext__ = 'app'
 
         def __init__(self, callback, *args, **kwargs):
@@ -27,7 +29,9 @@ class BroadcastReceiver(object):
         self.callback = callback
 
         if not actions and not categories:
-            raise Exception('You need to define at least actions or categories')
+            raise Exception(
+                'You need to define at least actions or categories'
+                )
 
         def _expand_partial_name(partial_name):
             if '.' in partial_name:
@@ -51,11 +55,20 @@ class BroadcastReceiver(object):
         # BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
         # WifiManager = autoclass('android.net.wifi.WifiManager')
         BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
-        resolved_actions = [_expand_partial_name(x) for x in actions or []]
-        resolved_categories = [_expand_partial_name(x) for x in categories or []]
+
+        resolved_actions = [
+            _expand_partial_name(x) for x in actions or []
+            ]
+
+        resolved_categories = [
+            _expand_partial_name(x) for x in categories or []
+            ]
 
         # resolve android API
-        GenericBroadcastReceiver = autoclass(JAVA_NAMESPACE + '.GenericBroadcastReceiver')
+        GenericBroadcastReceiver = autoclass(
+            JAVA_NAMESPACE + '.GenericBroadcastReceiver'
+            )
+
         IntentFilter = autoclass('android.content.IntentFilter')
         HandlerThread = autoclass('android.os.HandlerThread')
 
