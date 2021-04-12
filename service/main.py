@@ -72,7 +72,7 @@ class KivyService:
         notificationManager = cast(NotificationManager, systemService)
         notificationManager.notify(1111, fullScreenNotification)
 
-    def on_recive(self, context, intent):
+    def on_receive(self, context, intent):
 
         name = ''
         action = intent.getAction()
@@ -98,7 +98,7 @@ class KivyService:
 
         if not self.br:
             self.br = BroadcastReceiver(
-                self.on_recive, actions=[
+                self.on_receive, actions=[
                     'ACTION_ACL_CONNECTED',
                     'ACTION_ACL_DISCONNECTED'
                     ])

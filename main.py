@@ -820,7 +820,7 @@ class CarPos(MDApp):
         if get_location == "true":
             self.stop_service()
 
-    def on_recive(self, context, intent):
+    def on_receive(self, context, intent):
         name = ''
         action = intent.getAction()
         parcable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
@@ -864,7 +864,7 @@ class CarPos(MDApp):
                     'ACTION_ACL_DISCONNECT_REQUESTED' '''
 
             self.br = BroadcastReceiver(
-                self.on_recive, actions=[
+                self.on_receive, actions=[
                     'ACTION_ACL_CONNECTED',
                     'ACTION_ACL_DISCONNECTED'
                     ])
