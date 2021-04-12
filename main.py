@@ -1157,8 +1157,6 @@ class CarPos(MDApp):
     def on_resume(self):
         self.get_last_location()
         self.register_broadcats_receiver()
-        # Clock.schedule_once(self.size_animation_one, 2)
-        # self.size_animation_one()
 
     def on_stop(self, *_):
         try:
@@ -1171,7 +1169,6 @@ class CarPos(MDApp):
                 os.remove(f)
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
-        # Animation.cancel_all(self.root)
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
 
@@ -1251,7 +1248,11 @@ class CarPos(MDApp):
             sendIntent.setAction(Intent.ACTION_SEND)
             sendIntent.putExtra(Intent.EXTRA_TEXT, String(url))
             sendIntent.setType("text/plain")
-            shareIntent = Intent.createChooser(sendIntent, String('Share...'))
+
+            shareIntent = Intent.createChooser(
+                sendIntent, String('Share with...')
+                )
+
             mActivity.startActivity(shareIntent)
         else:
             toast('No location', True, 80)
@@ -1297,7 +1298,6 @@ class CarPos(MDApp):
                     Cancel(
                         text='CANCEL'),
                 ],
-                # size_hint_x=.75
             )
         if not self.plate_dialog:
             self.plate_dialog = MDDialog(
@@ -1407,8 +1407,7 @@ class CarPos(MDApp):
         else:
             locations = loc['loc']
             datetime = list(loc["datetime"])
-        # Logger.info(f'Creating
-        # history Locations are: {locations} datetime is {datetime}')
+
         for idx, i in enumerate(locations):
             self.root.ids.md_list.add_widget(
                 SwipeToDeleteItem(
