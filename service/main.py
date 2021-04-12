@@ -55,7 +55,7 @@ class KivyService:
 
         text = cast(
             'java.lang.CharSequence', AndroidString(
-                'location ready! Tap to save it'
+                'Location ready! Tap to save it'
                 )
             )
 
