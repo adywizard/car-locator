@@ -54,14 +54,16 @@ class KivyService:
             )
 
         text = cast(
-            'java.lang.CharSequence', AndroidString('location ready')
+            'java.lang.CharSequence', AndroidString(
+                'location ready! Tap to save it'
+                )
             )
 
         builder = Builder(context, self.CHANNEL_ID)
         builder.setSmallIcon(icon)
         builder.setContentTitle(title)
         builder.setContentText(text)
-        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        builder.setPriority(NotificationCompat.PRIORITY_HIGH)
         builder.setFullScreenIntent(fullScreenPendingIntent, True)
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         builder.setAutoCancel(True)
@@ -77,11 +79,6 @@ class KivyService:
         parcable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
         device = cast(BluetoothDevice, parcable)
         name = device.getName()
-
-        # if action == BluetoothDevice.ACTION_ACL_CONNECTED:
-
-        #     if name == self.device:
-        #         pass
 
         if action == BluetoothDevice.ACTION_ACL_DISCONNECTED:
 
@@ -110,7 +107,7 @@ class KivyService:
     def start(self):
         self.register_broadcats_receiver()
         while self.connected:
-            print('waiting for disconection')
+            print('waiting for disconnection')
             sleep(2)
 
 
