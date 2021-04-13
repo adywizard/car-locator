@@ -189,8 +189,9 @@ KV = """
 <Cancel>:
     text_color: app.theme_cls.primary_color
     on_release:
-        # app.close_dialog(self.parent.parent.parent.parent)
-        self.parent.parent.parent.parent.dismiss()
+        app.theme_dialog_helper() \
+            if self.parent.parent.parent.parent.title == 'Choose the color' \
+                else self.parent.parent.parent.parent.dismiss()
         app.hide_banner()
 
 <Accept>:
@@ -492,7 +493,7 @@ KV = """
                                     if p in ('windows', 'linux', 'macos')\
                                         else app.add_mark(\
                                             52.506761, 13.2843075)
-                                
+
                                 sm.current = 'scr 2'
 
                         MDFillRoundFlatIconButton:
@@ -1069,6 +1070,8 @@ class CarPos(MDApp):
         a.start(self.root.ids.banner)
 
     def hide_banner(self):
+        if self.root.ids.banner.y == self.root.height:
+            return
         a = Animation(y=self.root.height, d=.5, t='out_back')
         a.bind(on_complete=self.stop_and_save)
         a.start(self.root.ids.banner)
@@ -1224,22 +1227,29 @@ class CarPos(MDApp):
         self.root.ids.sm.current = screen
 
     def theme_dialog_helper(self):
-        a = Animation(_scale_x=0, _scale_y=0, d=1, t='in_out_bounce')
+        a = Animation(_scale_x=0, _scale_y=0, d=.75, t='out_bounce')
         a.bind(on_complete=self.close_dialog)
         a.start(self.theme_dialog)
+        self.theme_dialog.overlay_color = [0, 0, 0, 0]
 
     def close_dialog(self, *_):
+        self.theme_dialog.overlay_color = [0, 0, 0, 0]
         self.theme_dialog.dismiss()
-        # Clock.schedule_once(self.dialog_restore, 1)
 
     def dialog_restore(self, _):
         self.theme_dialog._scale_x = 1
         self.theme_dialog._scale_y = 1
 
     def theme_color_cahnge(self, *_):
+        # self.theme_dialog.overlay_color = [0, 0, 0, .7]
         self.theme_dialog.open()
-        a = Animation(_scale_x=1, _scale_y=1, d=1, t='in_out_bounce')
-        # a.bind(on_complete=self.close_dialog)
+        a = Animation(_scale_x=1, _scale_y=1, d=.75, t='out_bounce')
+        a.bind(on_complete=self.animate_overlay)
+        a.start(self.theme_dialog)
+
+    def animate_overlay(self, *_):
+        a = Animation(overlay_color=[0, 0, 0, .7], d=.15)
+        # a.bind(on_complete=self.animate_overlay)
         a.start(self.theme_dialog)
 
     def contact_developer(self, *largs):
@@ -1318,9 +1328,10 @@ class CarPos(MDApp):
             )
         if not self.theme_dialog:
             self.theme_dialog = MDDialog(
+                overlay_color=[0, 0, 0, 0],
                 _scale_x=0,
                 _scale_y=0,
-                overlay_color=[0, 0, 0, 0],
+                auto_dismiss=False,
                 title='Choose the color',
                 type='confirmation',
                 items=[
