@@ -3,74 +3,27 @@ from jnius import autoclass, cast
 from os import environ
 
 from blue.blue import BroadcastReceiver
+from android_notification.notification import notify
 
-Intent = autoclass('android.content.Intent')
+# Intent = autoclass('android.content.Intent')
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
+# PythonActivity = autoclass('org.kivy.android.PythonActivity')
 mService = autoclass('org.kivy.android.PythonService').mService
-PendingIntent = autoclass('android.app.PendingIntent')
-NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-Builder = autoclass('androidx.core.app.NotificationCompat$Builder')
-NotificationManager = autoclass('android.app.NotificationManager')
-NotificationChannel = autoclass('android.app.NotificationChannel')
-Context = autoclass('android.content.Context')
+# PendingIntent = autoclass('android.app.PendingIntent')
+# NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
+# Builder = autoclass('androidx.core.app.NotificationCompat$Builder')
+# NotificationManager = autoclass('android.app.NotificationManager')
+# NotificationChannel = autoclass('android.app.NotificationChannel')
+# Context = autoclass('android.content.Context')
 AndroidString = autoclass('java.lang.String')
-Drawable = autoclass("org.locator.locator.R$drawable")
+# Drawable = autoclass("org.locator.locator.R$drawable")
 
 
 class KivyService:
     def __init__(self):
         self.br = None
         self.connected = True
-        self.CHANNEL_ID = AndroidString("locator")
         self.device = environ.get('PYTHON_SERVICE_ARGUMENT', '')
-
-    def create_notification_channel(self, context):
-
-        name = cast('java.lang.CharSequence', AndroidString('Locator service'))
-        description = AndroidString("Location ready")
-
-        importance = NotificationManager.IMPORTANCE_HIGH
-        channel = NotificationChannel(self.CHANNEL_ID, name, importance)
-        channel.setDescription(description)
-        notificationManager = context.getSystemService(NotificationManager)
-        notificationManager.createNotificationChannel(channel)
-
-    def notify(self, context):
-        self.create_notification_channel(context)
-
-        icon = Drawable.icon
-
-        getLocation = AndroidString("getLocation")
-        true = AndroidString("true")
-
-        fullScreenIntent = Intent(context, PythonActivity)
-        fullScreenIntent.putExtra(getLocation, true)
-        fullScreenPendingIntent = PendingIntent.getActivity(
-            context, 0, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        title = cast(
-            'java.lang.CharSequence', AndroidString('Locator service')
-            )
-
-        text = cast(
-            'java.lang.CharSequence', AndroidString(
-                'Location ready! Tap to save it'
-                )
-            )
-
-        builder = Builder(context, self.CHANNEL_ID)
-        builder.setSmallIcon(icon)
-        builder.setContentTitle(title)
-        builder.setContentText(text)
-        builder.setPriority(NotificationCompat.PRIORITY_HIGH)
-        builder.setFullScreenIntent(fullScreenPendingIntent, True)
-        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        builder.setAutoCancel(True)
-        fullScreenNotification = builder.build()
-        systemService = context.getSystemService(Context.NOTIFICATION_SERVICE)
-        notificationManager = cast(NotificationManager, systemService)
-        notificationManager.notify(1111, fullScreenNotification)
 
     def on_receive(self, context, intent):
 
@@ -79,13 +32,22 @@ class KivyService:
         parcable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
         device = cast(BluetoothDevice, parcable)
         name = device.getName()
+        extras = [[AndroidString("getLocation"), AndroidString("true")]]
 
         if action == BluetoothDevice.ACTION_ACL_DISCONNECTED:
 
             if name == self.device:
                 self.connected = False
                 self.unregister_broadcast_receiver()
-                self.notify(context)
+                notify(
+                    context,
+                    'CAR LOCATOR',
+                    'Tap to save current location',
+                    'Location service',
+                    'Car locator',
+                    'Car locator service',
+                    extras
+                    )
                 mService.stopSelf()
 
     def unregister_broadcast_receiver(self):

@@ -15,7 +15,7 @@ from kivymd.uix.list import MDList, OneLineIconListItem
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.list import OneLineAvatarIconListItem
-from kivymd.toast import toast
+# from kivymd.toast import toast
 from kivy.properties import StringProperty, ListProperty,\
     ObjectProperty, NumericProperty, ColorProperty
 
@@ -38,7 +38,6 @@ from kivy.graphics import (
     ClearColor, ClearBuffers, Rectangle
 )
 from kivy.uix.floatlayout import FloatLayout
-from blue_devices_screen.devices import BlueDevicesScreen
 
 
 BUBBLE_COLORS = [
@@ -61,8 +60,10 @@ if platform == 'android':
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
     from android import activity
+    from android_toast.toast import android_toast
 
     from blue.blue import BroadcastReceiver
+    from android_notification.notification import notify
 
     Intent = autoclass('android.content.Intent')
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
@@ -128,9 +129,11 @@ void main(void)
 KV = """
 #: import colors kivymd.color_definitions.colors
 #: import Clock kivy.clock.Clock
+#: import p kivy.utils.platform
 #: import SE kivy.effects.scroll.ScrollEffect
 #: import MapView kivy_garden.mapview.MapView
 #: import w kivy.core.window.Window
+#: import BlueDevicesScreen blue_devices_screen.devices.BlueDevicesScreen
 
 
 <SemiCircle>
@@ -186,6 +189,7 @@ KV = """
 <Cancel>:
     text_color: app.theme_cls.primary_color
     on_release:
+        # app.close_dialog(self.parent.parent.parent.parent)
         self.parent.parent.parent.parent.dismiss()
         app.hide_banner()
 
@@ -222,7 +226,7 @@ KV = """
     on_release:
         theme_text_color: 'Primary'
         root.set_icon(check_c)
-        app.theme_dialog.dismiss()
+        app.theme_dialog_helper()
         app.update_theme_color(self.text)
 
 
@@ -485,10 +489,11 @@ KV = """
                             pos_hint: {'center_x': .5, 'center_y': .45}
                             on_release:
                                 app.add_mark(app.loca[0], app.loca[1])\
-                                    if app.loca else None
-                                sm.transition.direction = 'up' if app.loca\
-                                    else 'down'
-                                sm.current = 'scr 2' if app.loca else 'scr 1'
+                                    if p in ('windows', 'linux', 'macos')\
+                                        else app.add_mark(\
+                                            52.506761, 13.2843075)
+                                
+                                sm.current = 'scr 2'
 
                         MDFillRoundFlatIconButton:
 
@@ -823,9 +828,17 @@ class CarPos(MDApp):
         if action == BluetoothDevice.ACTION_ACL_CONNECTED:
 
             if name == self.paired_car and not self.is_car_paired:
-                toast(f'connected to {name} Starting service', True, 80)
+                # android_toast(f'connected to {name} Starting service', True)
                 activity.bind(on_new_intent=self.on_new_intent)
                 self.start_service(name)
+                notify(
+                    context,
+                    'CAR LOCATOR',
+                    'Car paired, will listen for diconnection',
+                    'Location service',
+                    'Car locator',
+                    'Car locator service',
+                    )
 
     def unregister_broadcast_receiver(self):
         if self.br and platform == 'android':
@@ -884,9 +897,9 @@ class CarPos(MDApp):
 
                 self.permit = True
             else:
-                toast("Permessions denied", True, 80)
+                android_toast("Permessions denied", True)
                 self.permit = False
-                toast("This app can't work without GPS", True, 80)
+                android_toast("This app can't work without GPS", True)
 
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
                              Permission.ACCESS_FINE_LOCATION], callback)
@@ -963,7 +976,7 @@ class CarPos(MDApp):
 
             if self.is_location_enabled():
                 if not caller:
-                    toast('GPS already on', True, 80)
+                    android_toast('GPS already on', True)
             else:
                 self.dialog.open()
 
@@ -1046,7 +1059,11 @@ class CarPos(MDApp):
         self.root.ids.banner.opacity = 1
         self.root.ids.b_lbl.opacity = 1
         a = Animation(
-            y=self.root.height-self.root.ids.toolbar.height-self.root.ids.banner.height,
+            y=(
+                self.root.height
+                - self.root.ids.toolbar.height
+                - self.root.ids.banner.height
+            ),
             d=.25, t='in_out_back'
             )
         a.start(self.root.ids.banner)
@@ -1075,7 +1092,7 @@ class CarPos(MDApp):
         self.root.ids.banner.opacity = 0
         self.stop()
         if not self.saved and self.is_location_enabled():
-            toast("Current location saved", True, 80)
+            android_toast("Current location saved", True)
             self.saved = True
 
             Clock.schedule_once(self.save_current_loc, 0)
@@ -1131,8 +1148,9 @@ class CarPos(MDApp):
 
         Clock.schedule_once(self.animate_colors, 3)
         Clock.schedule_once(self.animate_lower_pos, 3)
-        Clock.schedule_once(
-            self.first_start, 2)
+        # encreased to 3 seconds because of some older devices
+        # need more time for loading
+        Clock.schedule_once(self.first_start, 2.5)
 
     def on_pause(self, *_):
 
@@ -1163,9 +1181,10 @@ class CarPos(MDApp):
 
     def select_intent(self, icon, lon=None, lat=None, mode=None):
 
-        if platform in ('win', 'linux', 'macos') and icon == 'navigation':
+        if platform in ('win', 'linux', 'macos', 'linux2') \
+                and icon == 'walk':
             url = \
-                f"{URL}{lon},{lat},21z/"
+                f"{URL}52.506761,13.2843075,11z"
 
             webbrowser.open(url)
             return
@@ -1186,9 +1205,11 @@ class CarPos(MDApp):
                 return
 
         if icon == 'history':
-            self.root.ids.sm.current = 'scr 3'
+            Clock.schedule_once(partial(self.change_screen, 'scr 3'), .25)
+            # self.root.ids.sm.current = 'scr 3'
         elif icon == 'bluetooth':
-            self.root.ids.sm.current = 'blue'
+            Clock.schedule_once(partial(self.change_screen, 'blue'), .25)
+            # self.root.ids.sm.current = 'blue'
             return
         elif icon == 'palette':
             Clock.schedule_once(self.theme_color_cahnge, .3)
@@ -1199,8 +1220,27 @@ class CarPos(MDApp):
         elif icon == 'car':
             self.plate_dialog.open()
 
+    def change_screen(self, screen, _):
+        self.root.ids.sm.current = screen
+
+    def theme_dialog_helper(self):
+        a = Animation(_scale_x=0, _scale_y=0, d=1, t='in_out_bounce')
+        a.bind(on_complete=self.close_dialog)
+        a.start(self.theme_dialog)
+
+    def close_dialog(self, *_):
+        self.theme_dialog.dismiss()
+        # Clock.schedule_once(self.dialog_restore, 1)
+
+    def dialog_restore(self, _):
+        self.theme_dialog._scale_x = 1
+        self.theme_dialog._scale_y = 1
+
     def theme_color_cahnge(self, *_):
         self.theme_dialog.open()
+        a = Animation(_scale_x=1, _scale_y=1, d=1, t='in_out_bounce')
+        # a.bind(on_complete=self.close_dialog)
+        a.start(self.theme_dialog)
 
     def contact_developer(self, *largs):
 
@@ -1211,7 +1251,7 @@ class CarPos(MDApp):
         if intent.resolveActivity(mActivity.getPackageManager()):
             mActivity.startActivity(intent)
         else:
-            toast('No mail app found!', True, 80)
+            android_toast('No mail app found!', True)
 
     @mainthread
     def open_navigation(self, lon, lat, mode, *largs):
@@ -1223,8 +1263,9 @@ class CarPos(MDApp):
         if intent.resolveActivity(mActivity.getPackageManager()):
             mActivity.startActivity(intent)
         else:
-            toast(
-                'No google maps found!\nInstall it from Play Store', True, 80
+            android_toast(
+                'No google maps found!\nInstall it from Play Store',
+                True
                 )
 
     @mainthread
@@ -1246,7 +1287,7 @@ class CarPos(MDApp):
 
             mActivity.startActivity(shareIntent)
         else:
-            toast('No location', True, 80)
+            android_toast('No location', True)
 
     def create_dialogs(self):
         if not self.map_dialog:
@@ -1277,6 +1318,9 @@ class CarPos(MDApp):
             )
         if not self.theme_dialog:
             self.theme_dialog = MDDialog(
+                _scale_x=0,
+                _scale_y=0,
+                overlay_color=[0, 0, 0, 0],
                 title='Choose the color',
                 type='confirmation',
                 items=[
@@ -1369,7 +1413,7 @@ class CarPos(MDApp):
                     on_location=self.on_location, on_status=self.on_status)
             except NotImplementedError:
                 self.gps_status = 'GPS not available'
-                toast(self.gps_status, True, 80)
+                android_toast(self.gps_status, True)
 
     def create_content_drawer(self):
         icons_item = {

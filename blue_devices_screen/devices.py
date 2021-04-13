@@ -6,7 +6,7 @@ from kivymd.uix.list import MDList
 from kivymd.uix.toolbar import MDToolbar
 from kivymd.uix.button import MDFloatingActionButton
 from kivymd.app import MDApp
-from kivymd.toast import toast
+# from kivymd.toast import toast
 
 from kivy.utils import platform, get_hex_from_color
 from kivy.uix.boxlayout import BoxLayout
@@ -36,6 +36,7 @@ if platform == 'android':
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
     Intent = autoclass('android.content.Intent')
     mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
+    from android_toast.toast import android_toast
 
 
 class BlueDevicesScreen(MDScreen):
@@ -49,7 +50,7 @@ class BlueDevicesScreen(MDScreen):
         if platform == 'android':
             self.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
             if not self.bluetoothAdapter:
-                toast("This device doesn't support bluetooth", 80, True)
+                android_toast("This device doesn't support bluetooth", True)
         else:
             self.bluetoothAdapter = None
 
@@ -141,7 +142,7 @@ class BlueDevicesScreen(MDScreen):
         self.app.root.ids.content_drawer\
             .ids.md_list.children[0].text = widget.text
 
-        toast(f'Listening for {widget.text}', True, 80)
+        android_toast(f'Listening for {widget.text}', True)
 
     def switch_screen(self):
         self.app.root.ids.sm.current = 'scr 1'
