@@ -852,7 +852,7 @@ class CarPos(MDApp):
     def stop_service(self):
         mActivity.stop_service()
         activity.unbind(on_new_intent=self.on_new_intent)
-        Clock.schedule_del_safe(self.start(1000, 5)) 
+        self.start(1000, 5)
 
     @mainthread
     def start_service(self, device):
@@ -981,7 +981,8 @@ class CarPos(MDApp):
                 if not caller:
                     android_toast('GPS already on', True)
             else:
-                Clock.schedule_once(partial(self.theme_color_cahnge, self.dialog), .3)
+                Clock.schedule_once(
+                    partial(self.theme_color_cahnge, self.dialog), .3)
 
     @mainthread
     def enable(self, _):
@@ -1217,13 +1218,15 @@ class CarPos(MDApp):
             # self.root.ids.sm.current = 'blue'
             return
         elif icon == 'palette':
-            Clock.schedule_once(partial(self.theme_color_cahnge, self.theme_dialog), .3)
+            Clock.schedule_once(
+                partial(self.theme_color_cahnge, self.theme_dialog), .3)
 
         elif icon == 'set-left-right':
             app.anchor = 'right' if app.anchor == 'left' else 'left'
 
         elif icon == 'car':
-            Clock.schedule_once(partial(self.theme_color_cahnge, self.plate_dialog), .3)
+            Clock.schedule_once(partial(
+                self.theme_color_cahnge, self.plate_dialog), .3)
             # self.plate_dialog.open()
 
     def change_screen(self, screen, _):
