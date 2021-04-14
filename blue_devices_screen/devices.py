@@ -46,6 +46,8 @@ class BlueDevicesScreen(MDScreen):
         self.toolbar = None
         self.choosen_color = None
         self.app = MDApp.get_running_app()
+        self.number_of_devices = 0
+        self.count_animations = 0
 
         if platform == 'android':
             self.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -103,6 +105,7 @@ class BlueDevicesScreen(MDScreen):
 
     def on_leave(self, *args):
         self.devices = []
+        self.number_of_devices = 0
         self.list_of_devices.clear_widgets()
         Clock.schedule_once(self.app.save_theme, 0)
         Animation.cancel_all(self.refresh_btn)
@@ -129,9 +132,15 @@ class BlueDevicesScreen(MDScreen):
                 self.list_of_devices.clear_widgets()
 
                 for device in self.devices:
-                    name = OneLineListItem(text=device.getName())
+                    name = OneLineListItem(
+                        text=device.getName(), opacity=0
+                        )
+                    # self.number_of_devices += 1
                     name.bind(on_release=self.save_device_name)
                     self.list_of_devices.add_widget(name)
+
+                self.count_animations = len(self.list_of_devices.children)
+                Clock.schedule_once(self.animate_items_opacity, 0)
             else:
                 self.enable_bluetooth()
 
@@ -166,3 +175,20 @@ class BlueDevicesScreen(MDScreen):
         a.bind(on_start=self.change_decorations)
         a.start(self.refresh_btn)
         b.start(self.toolbar)
+
+    def animate_items_opacity(self, *_):
+        try:
+            a = Animation(opacity=1, d=.25, t='out_bounce')
+            a.bind(on_complete=self.decrease_children)
+            a.start(self.list_of_devices.children[self.count_animations-1])
+        except IndexError as e:
+            print(e)
+            for child in self.list_of_devices.children:
+                child.opacity = 1
+
+    def decrease_children(self, *_):
+        self.count_animations -= 1
+        if self.count_animations < 0:
+            self.count_animations = 0
+            return
+        self.animate_items_opacity()

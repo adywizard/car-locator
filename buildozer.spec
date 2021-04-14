@@ -19,13 +19,13 @@ source.include_exts = py,png,jpg,kv,atlas,ttf,db,txt,jpeg,json
 #source.include_patterns = assets/*,images/*.png
 
 # (list) Source files to exclude (let empty to not exclude anything)
-source.exclude_exts = spec
+source.exclude_exts = spec, md
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-source.exclude_dirs = tests, bin, venv
+source.exclude_dirs = tests, bin, venv, old_builds, icons
 
 # (list) List of exclusions using pattern matching
-#source.exclude_patterns = license,images/*/*.jpg
+source.exclude_patterns = LICENSE
 
 # (str) Application versioning (method 1)
 version = 0.1.2

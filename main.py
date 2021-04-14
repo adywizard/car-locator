@@ -1,10 +1,13 @@
 """Find my car"""
+
 __author__ = 'Ady Wizard'
+
 from functools import partial
 from random import choice
 import os
 import glob
 import json
+
 from kivymd.color_definitions import colors
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.app import MDApp
@@ -38,6 +41,7 @@ from kivy.graphics import (
     ClearColor, ClearBuffers, Rectangle
 )
 from kivy.uix.floatlayout import FloatLayout
+from kivy.metrics import dp
 
 
 BUBBLE_COLORS = [
@@ -189,21 +193,19 @@ KV = """
 <Cancel>:
     text_color: app.theme_cls.primary_color
     on_release:
-        app.theme_dialog_helper() \
-            if self.parent.parent.parent.parent.title == 'Choose the color' \
-                else self.parent.parent.parent.parent.dismiss()
+        app.animation_dialog_helper(self.parent.parent.parent.parent)
         app.hide_banner()
 
 <Accept>:
     text_color: app.theme_cls.primary_color
     on_release:
-        self.parent.parent.parent.parent.dismiss()
+        app.animation_dialog_helper(self.parent.parent.parent.parent)
         Clock.schedule_once(app.enable, .5)
 
 <Ok>
     text_color: app.theme_cls.primary_color
     on_release:
-        self.parent.parent.parent.parent.dismiss()
+        app.animation_dialog_helper(self.parent.parent.parent.parent)
         app.plate = app.plate_dialog.content_cls.ids.txt_field.text
 
 <ItemConfirm>
@@ -227,7 +229,7 @@ KV = """
     on_release:
         theme_text_color: 'Primary'
         root.set_icon(check_c)
-        app.theme_dialog_helper()
+        app.animation_dialog_helper(self.parent.parent.parent.parent)
         app.update_theme_color(self.text)
 
 
@@ -477,7 +479,7 @@ KV = """
                                 app.accur.clear()
                                 app.lat_lon.clear()
                                 app.saved = False
-                                app.start(1000, 0)
+                                app.start(1000, 5)
 
                         MDFillRoundFlatIconButton:
 
@@ -850,7 +852,7 @@ class CarPos(MDApp):
     def stop_service(self):
         mActivity.stop_service()
         activity.unbind(on_new_intent=self.on_new_intent)
-        self.start(1000, 0)
+        Clock.schedule_del_safe(self.start(1000, 5)) 
 
     @mainthread
     def start_service(self, device):
@@ -979,7 +981,7 @@ class CarPos(MDApp):
                 if not caller:
                     android_toast('GPS already on', True)
             else:
-                self.dialog.open()
+                Clock.schedule_once(partial(self.theme_color_cahnge, self.dialog), .3)
 
     @mainthread
     def enable(self, _):
@@ -1050,9 +1052,9 @@ class CarPos(MDApp):
                     tertiary_text=t_text
                     )
             )
-        Clock.schedule_once(self.allowe_scanning, 2.5)
+        Clock.schedule_once(self.allow_scanning, 2.5)
 
-    def allowe_scanning(self, _):
+    def allow_scanning(self, _):
         self.saved = False
 
     def show_banner(self):
@@ -1215,42 +1217,39 @@ class CarPos(MDApp):
             # self.root.ids.sm.current = 'blue'
             return
         elif icon == 'palette':
-            Clock.schedule_once(self.theme_color_cahnge, .3)
-            # self.theme_dialog.open()
+            Clock.schedule_once(partial(self.theme_color_cahnge, self.theme_dialog), .3)
+
         elif icon == 'set-left-right':
             app.anchor = 'right' if app.anchor == 'left' else 'left'
 
         elif icon == 'car':
-            self.plate_dialog.open()
+            Clock.schedule_once(partial(self.theme_color_cahnge, self.plate_dialog), .3)
+            # self.plate_dialog.open()
 
     def change_screen(self, screen, _):
         self.root.ids.sm.current = screen
 
-    def theme_dialog_helper(self):
+    def animation_dialog_helper(self, dialog):
         a = Animation(_scale_x=0, _scale_y=0, d=.75, t='out_bounce')
         a.bind(on_complete=self.close_dialog)
-        a.start(self.theme_dialog)
-        self.theme_dialog.overlay_color = [0, 0, 0, 0]
+        a.start(dialog)
+        dialog.overlay_color = [0, 0, 0, 0]
 
-    def close_dialog(self, *_):
-        self.theme_dialog.overlay_color = [0, 0, 0, 0]
-        self.theme_dialog.dismiss()
+    def close_dialog(self, *args):
+        args[1].overlay_color = [0, 0, 0, 0]
+        args[1].dismiss()
 
-    def dialog_restore(self, _):
-        self.theme_dialog._scale_x = 1
-        self.theme_dialog._scale_y = 1
+    def theme_color_cahnge(self, dialog, _):
 
-    def theme_color_cahnge(self, *_):
-        # self.theme_dialog.overlay_color = [0, 0, 0, .7]
-        self.theme_dialog.open()
+        dialog.open()
         a = Animation(_scale_x=1, _scale_y=1, d=.75, t='out_bounce')
         a.bind(on_complete=self.animate_overlay)
-        a.start(self.theme_dialog)
+        a.start(dialog)
 
-    def animate_overlay(self, *_):
+    def animate_overlay(self, *args):
         a = Animation(overlay_color=[0, 0, 0, .7], d=.15)
         # a.bind(on_complete=self.animate_overlay)
-        a.start(self.theme_dialog)
+        a.start(args[1])
 
     def contact_developer(self, *largs):
 
@@ -1317,6 +1316,10 @@ class CarPos(MDApp):
             )
         if not self.dialog:
             self.dialog = MDDialog(
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
+                auto_dismiss=False,
                 text="Turn on gps?",
                 size_hint_x=.8,
                 buttons=[
@@ -1347,9 +1350,12 @@ class CarPos(MDApp):
             )
         if not self.plate_dialog:
             self.plate_dialog = MDDialog(
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
                 title="Set the plate",
                 type="custom",
-                content_cls=PltContent(),
+                content_cls=PltContent(size_hint_y=None, height=dp(100)),
                 buttons=[
                     Cancel(text="CANCEL"),
                     Ok(text="OK")

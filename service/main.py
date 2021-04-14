@@ -4,19 +4,11 @@ from os import environ
 
 from blue.blue import BroadcastReceiver
 from android_notification.notification import notify
+# from plyer import gps
 
-# Intent = autoclass('android.content.Intent')
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
-# PythonActivity = autoclass('org.kivy.android.PythonActivity')
 mService = autoclass('org.kivy.android.PythonService').mService
-# PendingIntent = autoclass('android.app.PendingIntent')
-# NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-# Builder = autoclass('androidx.core.app.NotificationCompat$Builder')
-# NotificationManager = autoclass('android.app.NotificationManager')
-# NotificationChannel = autoclass('android.app.NotificationChannel')
-# Context = autoclass('android.content.Context')
 AndroidString = autoclass('java.lang.String')
-# Drawable = autoclass("org.locator.locator.R$drawable")
 
 
 class KivyService:
@@ -24,6 +16,22 @@ class KivyService:
         self.br = None
         self.connected = True
         self.device = environ.get('PYTHON_SERVICE_ARGUMENT', '')
+        # self.last_coordinates = []
+        # gps.configure(on_location=self.on_location)
+
+    # def on_location(self, **kwargs):
+    #     lat = kwargs.get('lat')
+    #     lon = kwargs.get('lon')
+    #     # self.last_coordinates = [str(lat), lon]
+    #     print(f'lat: {lat}, lon: {lon}')
+    #     notify(
+    #         mService.getApplicationContext(),
+    #         'CAR_LOCATOR',
+    #         f'lat: {lat}, lon: {lon}',
+    #         'Location service',
+    #         'Car locator',
+    #         'Car locator service',
+    #     )
 
     def on_receive(self, context, intent):
 
@@ -41,13 +49,14 @@ class KivyService:
                 self.unregister_broadcast_receiver()
                 notify(
                     context,
-                    'CAR LOCATOR',
-                    'Tap to save current location',
+                    'CAR_LOCATOR',
+                    'Location ready',
                     'Location service',
                     'Car locator',
                     'Car locator service',
                     extras
                     )
+                # gps.stop()
                 mService.stopSelf()
 
     def unregister_broadcast_receiver(self):
@@ -67,6 +76,7 @@ class KivyService:
             self.br.start()
 
     def start(self):
+        # gps.start(1000, 5)
         self.register_broadcats_receiver()
         while self.connected:
             print('waiting for disconnection')
