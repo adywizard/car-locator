@@ -847,6 +847,8 @@ class CarPos(MDApp):
                     'Location service',
                     'Car locator',
                     'Car locator service',
+                    flag='cancel',
+                    n_type='head'
                     )
 
     def unregister_broadcast_receiver(self):

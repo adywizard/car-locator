@@ -30,21 +30,27 @@ def create_notification_channel(context, channel_id, name, description):
 
 def notify(
         context, chanel_id='',
-        text='', title='', name='', description='', extras=[]):
+        text='', title='', name='',
+        description='', extras=[], flag='UPDATE', n_type='full'):
 
     create_notification_channel(context, chanel_id, name, description)
 
     icon = Drawable.icon
 
-    fullScreenIntent = Intent(context, PythonActivity)
+    if flag == 'update':
+        flag = PendingIntent.FLAG_UPDATE_CURRENT
+    elif flag == 'cancel':
+        flag = PendingIntent.FLAG_CANCEL_CURRENT
+
+    intent = Intent(context, PythonActivity)
 
     if extras:
 
         for extra in extras:
-            fullScreenIntent.putExtra(extra[0], extra[1])
+            intent.putExtra(extra[0], extra[1])
 
-    fullScreenPendingIntent = PendingIntent.getActivity(
-        context, 0, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+    pendingIntent = PendingIntent.getActivity(
+        context, 0, intent, flag)
 
     title = cast(
         'java.lang.CharSequence', AndroidString(title)
@@ -61,10 +67,17 @@ def notify(
     builder.setContentTitle(title)
     builder.setContentText(text)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
-    builder.setFullScreenIntent(fullScreenPendingIntent, True)
     builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+    builder.setVibrate([0])
     builder.setAutoCancel(True)
-    fullScreenNotification = builder.build()
+
+    if n_type == 'full':
+        builder.setFullScreenIntent(pendingIntent, True)
+    elif n_type == 'head':
+        builder.setContentIntent(pendingIntent)
+
+    notification = builder.build()
+
     systemService = context.getSystemService(Context.NOTIFICATION_SERVICE)
     notificationManager = cast(NotificationManager, systemService)
-    notificationManager.notify(1111, fullScreenNotification)
+    notificationManager.notify(1111, notification)
