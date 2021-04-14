@@ -4,6 +4,10 @@ Car locator android app created with kivy/kivymd
 
 ### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
+## Version 0.1.3
+
+Added more animations and cleaned all unnecessary files from build.
+
 ## Version 0.1.2
 
 Added shader animation instead of simple circles and lottie animation instead of static preplash image,

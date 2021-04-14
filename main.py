@@ -138,6 +138,7 @@ KV = """
 #: import MapView kivy_garden.mapview.MapView
 #: import w kivy.core.window.Window
 #: import BlueDevicesScreen blue_devices_screen.devices.BlueDevicesScreen
+#: import partial functools.partial
 
 
 <SemiCircle>
@@ -212,7 +213,8 @@ KV = """
     on_release:
         theme_text_color: 'Primary'
         root.set_icon(check)
-        app.map_dialog.dismiss()
+        app.animation_dialog_helper(app.map_dialog)
+        # app.map_dialog.dismiss()
         app.select_intent(\
             'walk', app.loca[0],\
                 app.loca[1], self.map_type)
@@ -554,7 +556,11 @@ KV = """
                             text_color: tb.specific_text_color
                             pos_hint: {'center_x': .5, 'center_y': .5}
                             on_release:
-                                app.map_dialog.open()
+                                Clock.schedule_once(\
+                                    partial(\
+                                        app.theme_color_cahnge, app.map_dialog\
+                                            ), .3\
+                                        )
 
             Screen:
                 name: 'scr 3'
@@ -1306,6 +1312,10 @@ class CarPos(MDApp):
             self.map_dialog = MDDialog(
                 title='How do you go there?',
                 type='confirmation',
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
+                auto_dismiss=False,
                 items=[
                     ItemConfirm(text='Walk', map_type='w'),
                     ItemConfirm(text='Bike', map_type='b'),
@@ -1358,6 +1368,7 @@ class CarPos(MDApp):
                 _scale_y=0,
                 title="Set the plate",
                 type="custom",
+                auto_dismiss=False,
                 content_cls=PltContent(size_hint_y=None, height=dp(100)),
                 buttons=[
                     Cancel(text="CANCEL"),
