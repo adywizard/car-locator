@@ -60,6 +60,37 @@ BUBBLE_COLORS = [
 
 URL = "https://www.google.com/maps/search/@"
 
+background_text = """
+This feauter needs location
+access in the background,
+app will steel be able to
+gader your car's position if
+you manually save location
+by pressing the button
+"save the location" however
+if you change your mind and
+you decide to use this feature
+you can always manually enable
+'allow all the time' permission
+in the settings under app info
+app permissions => location.
+"""
+
+first_warn_text = """
+On latest android versions
+Google changed it's policy
+about how permissions are
+granted, be aware that this
+app need access to the
+backgound location in order
+to save automaticaly your 
+car's location. If you
+choose automatic pairing
+with your car, you'll be
+asked for further permissions,
+consisder granting them.
+"""
+
 if platform == 'android':
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
@@ -86,6 +117,10 @@ if platform == 'android':
     View = autoclass('android.view.View')
     String = autoclass('java.lang.String')
     Boolean = autoclass('java.lang.Boolean')
+    ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
+    Manifest = autoclass('android.Manifest$permission')
+    PackageManager = autoclass('android.content.pm.PackageManager')
+    ContextCompat = autoclass('androidx.core.content.ContextCompat')
 else:
     import webbrowser
 
@@ -207,7 +242,9 @@ KV = """
     text_color: app.theme_cls.primary_color
     on_release:
         app.animation_dialog_helper(self.parent.parent.parent.parent)
-        app.plate = app.plate_dialog.content_cls.ids.txt_field.text
+        app.get_background_permission_option_label()\
+            if self.parent.parent.parent.parent.title == 'Background location'\
+                else app.set_plate_number()
 
 <ItemConfirm>
     on_release:
@@ -278,6 +315,7 @@ KV = """
             halign: 'center'
             theme_text_color: 'Custom'
             text_color: app.theme_cls.primary_color
+            size_hint_x: .7
             pos_hint: {'center_x': .5, 'center_y': .5}
 
     MDBoxLayout:
@@ -493,10 +531,10 @@ KV = """
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .45}
                             on_release:
-                                app.add_mark(app.loca[0], app.loca[1])\
+                                app.add_mark(52.506761, 13.2843075)\
                                     if p in ('windows', 'linux', 'macos')\
                                         else app.add_mark(\
-                                            52.506761, 13.2843075)
+                                            app.loca[0], app.loca[1])
 
                                 sm.current = 'scr 2'
 
@@ -794,10 +832,13 @@ class CarPos(MDApp):
     gps_status = StringProperty()
     loca = ListProperty()
     permit = False
-    dialog = None
     mark = None
+
+    dialog = None
     map_dialog = None
     plate_dialog = None
+    a_11_background_permit = None
+
     lat_lon = []
     accur = []
     saved = False
@@ -822,10 +863,14 @@ class CarPos(MDApp):
     paired_car = ""
     is_car_paired = False
 
+    is_firs_time = None
+
     def on_new_intent(self, intent):
         get_location = intent.getStringExtra("getLocation")
+        lat = float(intent.getStringExtra("lat"))
+        lon = float(intent.getStringExtra("lon"))
         if get_location == "true":
-            self.stop_service()
+            self.stop_service(lat, lon)
 
     def on_receive(self, context, intent):
         name = ''
@@ -847,8 +892,9 @@ class CarPos(MDApp):
                     'Location service',
                     'Car locator',
                     'Car locator service',
-                    flag='cancel',
-                    n_type='head'
+                    flag='update',
+                    n_type='head',
+                    autocancel=True
                     )
 
     def unregister_broadcast_receiver(self):
@@ -857,10 +903,32 @@ class CarPos(MDApp):
             self.br = None
 
     @mainthread
-    def stop_service(self):
+    def stop_service(self, lat, lon):
         mActivity.stop_service()
         activity.unbind(on_new_intent=self.on_new_intent)
-        self.start(1000, 5)
+
+        now = self.get_datetime()
+
+        with open('locations/loc.json', 'r+') as f:
+            loc = json.load(f)
+            loc["datetime"].append(now)
+
+            number_of_locations = len(loc['loc'])
+
+            if number_of_locations >= 20:
+                loc['loc'].pop(0)
+
+            loc['loc'].append([lat, lon])
+            f.seek(0)
+            json.dump(loc, f)
+
+        self.root.ids.md_list.add_widget(
+                SwipeToDeleteItem(
+                    text="Automatic Location",
+                    secondary_text=now,
+                    tertiary_text=f"longitude {lat} latitude {lon}"
+                    )
+            )
 
     @mainthread
     def start_service(self, device):
@@ -898,6 +966,45 @@ class CarPos(MDApp):
         self.root.ids.sm.transition = SlideTransition()
         self.root.ids.sm.transition.direction = 'up'
 
+    def get_background_permission_option_label(self):
+        '''this is yet to be implemented with newer API'''
+        PackageManager.getBackgroundPermissionOptionLabel()
+
+    def check_background(self, *_):
+
+        if ContextCompat.checkSelfPermission(
+                mActivity.getApplicationContext(),
+                Manifest.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED:
+            return True
+
+        if ContextCompat.checkSelfPermission(
+                mActivity.getApplicationContext(),
+                Manifest.ACCESS_BACKGROUND_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED:
+            ActivityCompat.requestPermissions(
+                mActivity, [Manifest.ACCESS_BACKGROUND_LOCATION], 1)
+
+        if ContextCompat.checkSelfPermission(
+                mActivity.getApplicationContext(),
+                Manifest.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_DENIED:
+
+            if ActivityCompat.shouldShowRequestPermissionRationale(
+                        mActivity,
+                        Manifest.ACCESS_BACKGROUND_LOCATION
+                        ):
+                Clock.schedule_once(
+                    partial(
+                        self.theme_color_cahnge, self.a_11_background_permit
+                        ), 0)
+                '''show dialog explaining why is needed'''
+
+    def explain_need_for_backgraund(self, *_):
+        if self.is_firs_time:
+            Clock.schedule_once(partial(
+                self.theme_color_cahnge, self.explain_dialog), 0)
+
     def request_android_permissions(self):
 
         from android.permissions import request_permissions, Permission
@@ -922,6 +1029,9 @@ class CarPos(MDApp):
             self.request_android_permissions()
         Builder.load_string(KV)
         self.root = RootWidget()
+
+    def set_plate_number(self):
+        self.plate = self.plate_dialog.content_cls.ids.txt_field.text
 
     def handle_screens(self):
 
@@ -1378,6 +1488,19 @@ class CarPos(MDApp):
                 ]
             )
 
+        if not self.a_11_background_permit:
+            self.a_11_background_permit = MDDialog(
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
+                title="Automatic location saving",
+                auto_dismiss=False,
+                text=background_text,
+                buttons=[
+                    Ok(text="OK")
+                ]
+            )
+
     def get_last_location(self):
         with open(
             'locations/loc.json', 'r'
@@ -1405,7 +1528,8 @@ class CarPos(MDApp):
                 "car": self.car_image,
                 "drawer": self.anchor,
                 "plate": self.plate,
-                "device": self.paired_car
+                "device": self.paired_car,
+                "first_run": False
                 }
         with open('settings/sett.json', 'w') as f:
             json.dump(sett, f, indent=4)
@@ -1421,13 +1545,36 @@ class CarPos(MDApp):
         self.anchor = sett["drawer"]
         self.plate = sett["plate"]
         self.paired_car = sett["device"]
+        self.is_firs_time = sett["first_run"]
         app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
         if sett["theme_style"] == 'Dark':
             self.root.ids.r.color = [0, 0, 0, 1]
         else:
             self.root.ids.r.color = [1, 1, 1, 1]
 
+        if self.is_firs_time:
+            self.create_explain_dialog()
+        if not self.is_firs_time:
+            self.explain_dialog = None
+
         sett = None
+
+    def create_explain_dialog(self):
+        self.explain_dialog = MDDialog(
+            overlay_color=[0, 0, 0, 0],
+            _scale_x=0,
+            _scale_y=0,
+            title="Location permissions",
+            auto_dismiss=False,
+            text=first_warn_text,
+            buttons=[
+                Ok(text="OK")
+            ]
+        )
+        Clock.schedule_once(
+            partial(self.theme_color_cahnge, self.explain_dialog), 0)
+        self.is_firs_time = False
+        Clock.schedule_once(self.save_theme, 1)
 
     def set_decorations(self):
         if platform == "android":

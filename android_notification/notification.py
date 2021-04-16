@@ -29,11 +29,12 @@ def create_notification_channel(context, channel_id, name, description):
 
 
 def notify(
-        context, chanel_id='',
+        context, channel_id='',
         text='', title='', name='',
-        description='', extras=[], flag='UPDATE', n_type='full'):
+        description='', extras=[],
+        flag='update', n_type='full', autocancel=False):
 
-    create_notification_channel(context, chanel_id, name, description)
+    create_notification_channel(context, channel_id, name, description)
 
     icon = Drawable.icon
 
@@ -62,19 +63,21 @@ def notify(
             )
         )
 
-    builder = Builder(context, chanel_id)
+    builder = Builder(context, channel_id)
     builder.setSmallIcon(icon)
     builder.setContentTitle(title)
     builder.setContentText(text)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-    builder.setVibrate([0])
-    builder.setAutoCancel(True)
+
+    if autocancel:
+        builder.setAutoCancel(True)
 
     if n_type == 'full':
         builder.setFullScreenIntent(pendingIntent, True)
     elif n_type == 'head':
         builder.setContentIntent(pendingIntent)
+        builder.setVibrate([0])
 
     notification = builder.build()
 

@@ -16,6 +16,8 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.metrics import dp
 
+# from functools import partial
+
 # from kivymd.icon_definitions import md_icons
 
 COLORS = [
@@ -37,6 +39,9 @@ if platform == 'android':
     Intent = autoclass('android.content.Intent')
     mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
     from android_toast.toast import android_toast
+    ContextCompat = autoclass('androidx.core.content.ContextCompat')
+    Manifest = autoclass('android.Manifest$permission')
+    PackageManager = autoclass('android.content.pm.PackageManager')
 
 
 class BlueDevicesScreen(MDScreen):
@@ -95,12 +100,22 @@ class BlueDevicesScreen(MDScreen):
         enableAdapter = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         mActivity.startActivityForResult(enableAdapter, 0)
 
-    def on_enter(self, *args):
+    def post_background_permissions(self):
         if self.bluetoothAdapter:
             if not self.bluetoothAdapter.isEnabled():
                 self.enable_bluetooth()
+                return
             self.get_bluetooth_devices()
         Clock.schedule_once(self.animate_button_colors, 0)
+
+    def on_enter(self, *args):
+        if platform == 'android':
+            granted = self.app.check_background()
+            if granted:
+                self.post_background_permissions()
+            else:
+                self.app.root.ids.sm.current = 'scr 1'
+
         return super().on_enter(*args)
 
     def on_leave(self, *args):

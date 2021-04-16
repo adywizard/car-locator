@@ -4,7 +4,7 @@ from os import environ
 
 from blue.blue import BroadcastReceiver
 from android_notification.notification import notify
-# from plyer import gps
+from plyer import gps
 
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
 mService = autoclass('org.kivy.android.PythonService').mService
@@ -16,51 +16,37 @@ class KivyService:
         self.br = None
         self.connected = True
         self.device = environ.get('PYTHON_SERVICE_ARGUMENT', '')
-        # self.last_coordinates = []
-        # gps.configure(on_location=self.on_location)
+        self.last_coordinates = []
+        gps.configure(on_location=self.on_location)
+        self.context = None
+        self.extras = []
 
-    # def on_location(self, **kwargs):
-    #     lat = kwargs.get('lat')
-    #     lon = kwargs.get('lon')
-    #     # self.last_coordinates = [str(lat), lon]
-    #     print(f'lat: {lat}, lon: {lon}')
-    #     notify(
-    #         mService.getApplicationContext(),
-    #         'CAR_LOCATOR',
-    #         f'lat: {lat}, lon: {lon}',
-    #         'Location service',
-    #         'Car locator',
-    #         'Car locator service',
-    #     )
+    def on_location(self, **kwargs):
+        lat = kwargs.get('lat')
+        lon = kwargs.get('lon')
+        self.last_coordinates = [
+            str(lat), str(lon)
+            ]
+        print(f'lat: {lat}, lon: {lon}')
 
     def on_receive(self, context, intent):
+
+        self.context = context
 
         name = ''
         action = intent.getAction()
         parcable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
         device = cast(BluetoothDevice, parcable)
         name = device.getName()
-        extras = [[AndroidString("getLocation"), AndroidString("true")]]
 
         if action == BluetoothDevice.ACTION_ACL_DISCONNECTED:
+            print('started')
 
             if name == self.device:
-                self.connected = False
+                gps.start(1000, 2)
                 self.unregister_broadcast_receiver()
-                notify(
-                    context,
-                    'CAR_LOCATOR',
-                    'Location ready',
-                    'Location service',
-                    'Car locator',
-                    'Car locator service',
-                    extras
-                    )
-                # gps.stop()
-                mService.stopSelf()
 
     def unregister_broadcast_receiver(self):
-
         if self.br:
             self.br.stop()
             self.br = None
@@ -75,12 +61,43 @@ class KivyService:
                     ])
             self.br.start()
 
+    def stop_service(self):
+
+        self.extras = [
+            [
+                AndroidString("getLocation"), AndroidString("true")
+                ],
+            [
+                AndroidString("lat"), AndroidString(self.last_coordinates[0])
+                ],
+            [
+                AndroidString("lon"), AndroidString(self.last_coordinates[1])
+                ]
+            ]
+        notify(
+            context=self.context,
+            channel_id='CAR_LOCATOR',
+            text=f'{self.last_coordinates[0]} {self.last_coordinates[1]}',
+            title='Location service',
+            name='Car locator',
+            description='Car locator service',
+            extras=self.extras,
+            flag='update',
+            n_type='full',
+            autocancel=False
+            )
+        gps.stop()
+        self.connected = False
+        mService.stopSelf()
+
     def start(self):
-        # gps.start(1000, 5)
+
         self.register_broadcats_receiver()
         while self.connected:
             print('waiting for disconnection')
-            sleep(2)
+            if self.last_coordinates:
+                self.stop_service()
+            sleep(.1)
 
 
 if __name__ == '__main__':

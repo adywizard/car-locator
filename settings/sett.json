@@ -8,5 +8,6 @@
     "car": "imgs/Blue-car.png",
     "drawer": "left",
     "plate": "plate-number-here",
-    "device": ""
+    "device": "",
+    "first_run": true
 }
