@@ -315,8 +315,8 @@ KV = """
             halign: 'center'
             theme_text_color: 'Custom'
             text_color: app.theme_cls.primary_color
-            size_hint_x: .7
-            pos_hint: {'center_x': .5, 'center_y': .5}
+            size_hint_x: .5
+            pos_hint: {'center_x': .6, 'center_y': .5}
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -867,8 +867,13 @@ class CarPos(MDApp):
 
     def on_new_intent(self, intent):
         get_location = intent.getStringExtra("getLocation")
-        lat = float(intent.getStringExtra("lat"))
-        lon = float(intent.getStringExtra("lon"))
+        lat = intent.getStringExtra("lat")
+        lon = intent.getStringExtra("lon")
+
+        if lat or lon:
+            lat = float(lat)
+            lon = float(lon)
+
         if get_location == "true":
             self.stop_service(lat, lon)
 
@@ -887,7 +892,7 @@ class CarPos(MDApp):
                 self.start_service(name)
                 notify(
                     context,
-                    'CAR LOCATOR',
+                    'CAR_LOCATOR_HEADS_UP',
                     'Car paired, will listen for diconnection',
                     'Location service',
                     'Car locator',
@@ -972,36 +977,39 @@ class CarPos(MDApp):
 
     def check_background(self, *_):
 
-        if ContextCompat.checkSelfPermission(
-                mActivity.getApplicationContext(),
-                Manifest.ACCESS_BACKGROUND_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED:
-            return True
+        if self.permit:
 
-        if ContextCompat.checkSelfPermission(
-                mActivity.getApplicationContext(),
-                Manifest.ACCESS_BACKGROUND_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED:
-            ActivityCompat.requestPermissions(
-                mActivity, [Manifest.ACCESS_BACKGROUND_LOCATION], 1)
+            if ContextCompat.checkSelfPermission(
+                    mActivity.getApplicationContext(),
+                    Manifest.ACCESS_BACKGROUND_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED:
+                return True
 
-        if ContextCompat.checkSelfPermission(
-                mActivity.getApplicationContext(),
-                Manifest.ACCESS_BACKGROUND_LOCATION
-                ) == PackageManager.PERMISSION_DENIED:
+            if ContextCompat.checkSelfPermission(
+                    mActivity.getApplicationContext(),
+                    Manifest.ACCESS_BACKGROUND_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED:
+                ActivityCompat.requestPermissions(
+                    mActivity, [Manifest.ACCESS_BACKGROUND_LOCATION], 1)
 
-            if ActivityCompat.shouldShowRequestPermissionRationale(
-                        mActivity,
-                        Manifest.ACCESS_BACKGROUND_LOCATION
-                        ):
-                Clock.schedule_once(
-                    partial(
-                        self.theme_color_cahnge, self.a_11_background_permit
-                        ), 0)
-                '''show dialog explaining why is needed'''
+            if ContextCompat.checkSelfPermission(
+                    mActivity.getApplicationContext(),
+                    Manifest.ACCESS_BACKGROUND_LOCATION
+                    ) == PackageManager.PERMISSION_DENIED:
+
+                if ActivityCompat.shouldShowRequestPermissionRationale(
+                            mActivity,
+                            Manifest.ACCESS_BACKGROUND_LOCATION
+                            ):
+                    Clock.schedule_once(
+                        partial(
+                            self.theme_color_cahnge,
+                            self.a_11_background_permit
+                            ), 0)
+                    '''show dialog explaining why is needed'''
 
     def explain_need_for_backgraund(self, *_):
-        if self.is_firs_time:
+        if self.is_firs_time and platform == 'android':
             Clock.schedule_once(partial(
                 self.theme_color_cahnge, self.explain_dialog), 0)
 
@@ -1552,7 +1560,7 @@ class CarPos(MDApp):
         else:
             self.root.ids.r.color = [1, 1, 1, 1]
 
-        if self.is_firs_time:
+        if self.is_firs_time and platform == 'android':
             self.create_explain_dialog()
         if not self.is_firs_time:
             self.explain_dialog = None
@@ -1572,7 +1580,7 @@ class CarPos(MDApp):
             ]
         )
         Clock.schedule_once(
-            partial(self.theme_color_cahnge, self.explain_dialog), 0)
+            partial(self.theme_color_cahnge, self.explain_dialog), 1)
         self.is_firs_time = False
         Clock.schedule_once(self.save_theme, 1)
 

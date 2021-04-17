@@ -109,6 +109,7 @@ class BlueDevicesScreen(MDScreen):
         Clock.schedule_once(self.animate_button_colors, 0)
 
     def on_enter(self, *args):
+
         if platform == 'android':
             granted = self.app.check_background()
             if granted:

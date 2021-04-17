@@ -14,6 +14,8 @@ Context = autoclass('android.content.Context')
 AndroidString = autoclass('java.lang.String')
 Drawable = autoclass("org.locator.locator.R$drawable")
 
+ID = 11
+
 
 def create_notification_channel(context, channel_id, name, description):
 
@@ -38,10 +40,17 @@ def notify(
 
     icon = Drawable.icon
 
+    if channel_id == 'CAR_LOCATOR':
+        ID = 123123
+    elif channel_id == 'CAR_LOCATOR_HEADS_UP':
+        ID = 121212
+
     if flag == 'update':
         flag = PendingIntent.FLAG_UPDATE_CURRENT
     elif flag == 'cancel':
         flag = PendingIntent.FLAG_CANCEL_CURRENT
+    elif flag == 'one':
+        flag = PendingIntent.FLAG_ONE_SHOT
 
     intent = Intent(context, PythonActivity)
 
@@ -51,7 +60,7 @@ def notify(
             intent.putExtra(extra[0], extra[1])
 
     pendingIntent = PendingIntent.getActivity(
-        context, 0, intent, flag)
+        context, ID, intent, flag)
 
     title = cast(
         'java.lang.CharSequence', AndroidString(title)
