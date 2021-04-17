@@ -83,7 +83,7 @@ about how permissions are
 granted, be aware that this
 app need access to the
 backgound location in order
-to save automaticaly your 
+to automaticaly save your
 car's location. If you
 choose automatic pairing
 with your car, you'll be
@@ -121,6 +121,7 @@ if platform == 'android':
     Manifest = autoclass('android.Manifest$permission')
     PackageManager = autoclass('android.content.pm.PackageManager')
     ContextCompat = autoclass('androidx.core.content.ContextCompat')
+    NotificationManager = autoclass('android.app.NotificationManager')
 else:
     import webbrowser
 
@@ -866,9 +867,21 @@ class CarPos(MDApp):
     is_firs_time = None
 
     def on_new_intent(self, intent):
+        cancel = intent.getStringExtra("cancel")
+        if cancel == "cancel":
+            self.stop_service(0, 0)
+            self.start(1000, 0)
+
         get_location = intent.getStringExtra("getLocation")
         lat = intent.getStringExtra("lat")
         lon = intent.getStringExtra("lon")
+
+        start = intent.getStringExtra("start")
+        if start == "start":
+            self.start_service(self.paired_car)
+            self.turn_on_gps('start')
+            NotificationManager.cancelAll()
+            return
 
         if lat or lon:
             lat = float(lat)
@@ -889,11 +902,11 @@ class CarPos(MDApp):
             if name == self.paired_car and not self.is_car_paired:
                 # android_toast(f'connected to {name} Starting service', True)
                 activity.bind(on_new_intent=self.on_new_intent)
-                self.start_service(name)
+                # self.start_service(name)
                 notify(
                     context,
                     'CAR_LOCATOR_HEADS_UP',
-                    'Car paired, will listen for diconnection',
+                    'Car connected press start!',
                     'Location service',
                     'Car locator',
                     'Car locator service',
@@ -911,6 +924,9 @@ class CarPos(MDApp):
     def stop_service(self, lat, lon):
         mActivity.stop_service()
         activity.unbind(on_new_intent=self.on_new_intent)
+
+        if lat == 0 and lon == 0:
+            return
 
         now = self.get_datetime()
 

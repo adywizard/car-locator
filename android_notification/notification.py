@@ -12,9 +12,26 @@ NotificationManager = autoclass('android.app.NotificationManager')
 NotificationChannel = autoclass('android.app.NotificationChannel')
 Context = autoclass('android.content.Context')
 AndroidString = autoclass('java.lang.String')
-Drawable = autoclass("org.locator.locator.R$drawable")
-
+# Drawable = autoclass('org.locator.locator.R$drawable')
+ActionBuilder = autoclass(
+    'androidx.core.app.NotificationCompat$Action$Builder'
+    )
+Action = autoclass('androidx.core.app.NotificationCompat$Action')
+R = autoclass('android.R$drawable')
 ID = 11
+
+
+def create_action_intent(context):
+    i = Intent(context, PythonActivity)
+    i.putExtra(AndroidString("start"), AndroidString("start"))
+
+    pendingIntent = PendingIntent.getActivity(
+        context, 321321, i, PendingIntent.FLAG_UPDATE_CURRENT)
+    title = cast('java.lang.CharSequence', AndroidString("start"))
+
+    action = ActionBuilder(R.ic_menu_mylocation, title, pendingIntent)
+
+    return action.build()
 
 
 def create_notification_channel(context, channel_id, name, description):
@@ -38,12 +55,11 @@ def notify(
 
     create_notification_channel(context, channel_id, name, description)
 
-    icon = Drawable.icon
-
     if channel_id == 'CAR_LOCATOR':
         ID = 123123
     elif channel_id == 'CAR_LOCATOR_HEADS_UP':
         ID = 121212
+        action = create_action_intent(context)
 
     if flag == 'update':
         flag = PendingIntent.FLAG_UPDATE_CURRENT
@@ -57,7 +73,7 @@ def notify(
     if extras:
 
         for extra in extras:
-            intent.putExtra(extra[0], extra[1])
+            intent.putExtra(AndroidString(extra[0]), AndroidString(extra[1]))
 
     pendingIntent = PendingIntent.getActivity(
         context, ID, intent, flag)
@@ -73,7 +89,7 @@ def notify(
         )
 
     builder = Builder(context, channel_id)
-    builder.setSmallIcon(icon)
+    builder.setSmallIcon(context.getApplicationInfo().icon)
     builder.setContentTitle(title)
     builder.setContentText(text)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -87,6 +103,7 @@ def notify(
     elif n_type == 'head':
         builder.setContentIntent(pendingIntent)
         builder.setVibrate([0])
+        builder.addAction(action)
 
     notification = builder.build()
 

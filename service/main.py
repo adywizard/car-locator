@@ -22,12 +22,13 @@ class KivyService:
         self.extras = []
 
     def on_location(self, **kwargs):
+
         lat = kwargs.get('lat')
         lon = kwargs.get('lon')
         self.last_coordinates = [
             str(lat), str(lon)
             ]
-        print(f'lat: {lat}, lon: {lon}')
+        # print(f'lat: {lat}, lon: {lon}')
 
     def on_receive(self, context, intent):
 
@@ -40,10 +41,9 @@ class KivyService:
         name = device.getName()
 
         if action == BluetoothDevice.ACTION_ACL_DISCONNECTED:
-            print('started')
-
+            # print('started')
             if name == self.device:
-                gps.start(1000, 2)
+                gps.start(1000, 0)
                 self.unregister_broadcast_receiver()
 
     def unregister_broadcast_receiver(self):
@@ -65,20 +65,20 @@ class KivyService:
 
         self.extras = [
             [
-                AndroidString("getLocation"), AndroidString("true")
+                'getLocation', 'true'
                 ],
             [
-                AndroidString("lat"), AndroidString(self.last_coordinates[0])
+                'lat', str(self.last_coordinates[0])
                 ],
             [
-                AndroidString("lon"), AndroidString(self.last_coordinates[1])
+                'lon', str(self.last_coordinates[1])
                 ]
             ]
         notify(
             context=self.context,
             channel_id='CAR_LOCATOR',
-            text=f'{self.last_coordinates[0]} {self.last_coordinates[1]}',
-            title='Location service',
+            text='Location ready!',
+            title='Car locator location service',
             name='Car locator',
             description='Car locator service',
             extras=self.extras,
@@ -91,10 +91,14 @@ class KivyService:
         mService.stopSelf()
 
     def start(self):
+        i = 0
 
         self.register_broadcats_receiver()
         while self.connected:
-            print('waiting for disconnection')
+            i += 1
+            if i > 50:
+                print('waiting for disconnection')
+                i = 0
             if self.last_coordinates:
                 self.stop_service()
             sleep(.1)
