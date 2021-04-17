@@ -33,8 +33,10 @@ Also there's some monipulation of the Java code involved:
 
 Inside onCreate method of the PythonActivity.java this needs to be added
 
+```
 setShowWhenLocked(true);
 setTurnScreenOn(true);
+```
 
 should look like this:
 
@@ -71,7 +73,7 @@ PendingIntent pi = PendingIntent.getActivity(context, 123123, i, PendingIntent.F
 
 ```
 
-and also this: builder.addAction(context.getApplicationInfo().icon, "Force diconnection and save", pi);
+and also this: ```builder.addAction(context.getApplicationInfo().icon, "Force diconnection and save", pi);```
 
 looks like this:
 
@@ -87,7 +89,7 @@ notification = builder.build();
 ```
 
 
-In the AndroidManifest.tmpl.xml android:foregroundServiceType="location" has to be added
+In the AndroidManifest.tmpl.xml ```android:foregroundServiceType="location"``` has to be added
 
 it looks like this:
 
