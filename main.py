@@ -4,6 +4,7 @@ __author__ = 'Ady Wizard'
 
 from functools import partial
 from random import choice
+from datetime import datetime, date
 import os
 import glob
 import json
@@ -18,7 +19,9 @@ from kivymd.uix.list import MDList, OneLineIconListItem
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.list import OneLineAvatarIconListItem
-# from kivymd.toast import toast
+# from kivymd.uix.picker import MDTimePicker
+
+
 from kivy.properties import StringProperty, ListProperty,\
     ObjectProperty, NumericProperty, ColorProperty
 
@@ -28,6 +31,7 @@ from kivy.uix.screenmanager import (
     )
 
 from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
 from kivy.utils import platform
 from kivy.core.window import Window
 from kivy.clock import mainthread
@@ -42,6 +46,9 @@ from kivy.graphics import (
 )
 from kivy.uix.floatlayout import FloatLayout
 from kivy.metrics import dp
+
+from time_picker.picker import CustomTimePicker
+from constants.texts import first_warn_text, background_text
 
 
 BUBBLE_COLORS = [
@@ -60,45 +67,17 @@ BUBBLE_COLORS = [
 
 URL = "https://www.google.com/maps/search/@"
 
-background_text = """
-This feauter needs location
-access in the background,
-app will steel be able to
-gader your car's position if
-you manually save location
-by pressing the button
-"save the location" however
-if you change your mind and
-you decide to use this feature
-you can always manually enable
-'allow all the time' permission
-in the settings under app info
-app permissions => location.
-"""
-
-first_warn_text = """
-On latest android versions
-Google changed it's policy
-about how permissions are
-granted, be aware that this
-app need access to the
-backgound location in order
-to automaticaly save your
-car's location. If you
-choose automatic pairing
-with your car, you'll be
-asked for further permissions,
-consisder granting them.
-"""
 
 if platform == 'android':
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
     from android import activity
-    from android_toast.toast import android_toast
+    from android.permissions import request_permissions, Permission
 
     from blue.blue import BroadcastReceiver
     from android_notification.notification import notify
+    from alarm_manager.alarm import ParkAlarmManager
+    from android_toast.toast import android_toast
 
     Intent = autoclass('android.content.Intent')
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
@@ -122,10 +101,12 @@ if platform == 'android':
     PackageManager = autoclass('android.content.pm.PackageManager')
     ContextCompat = autoclass('androidx.core.content.ContextCompat')
     NotificationManager = autoclass('android.app.NotificationManager')
+    BuildVersion = autoclass('android.os.Build$VERSION')
+    BuildVersion_CODES = autoclass('android.os.Build$VERSION_CODES')
 else:
     import webbrowser
 
-    def run_on_ui_thread(*args):
+    def run_on_ui_thread(*args, **kwargs):
         return
 
 
@@ -177,6 +158,37 @@ KV = """
 #: import partial functools.partial
 
 
+<ContentLocationReady>
+    MDLabel:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        size_hint: .7, .7
+        text: 'Do yo want to crate parking alarm?'
+
+<ContentTimeError>
+    MDLabel:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        size_hint: .7, .7
+        text: 'Can be more then 12h or less then 1 minute'
+
+<WarnDialogContent>
+    box: box
+    txt: txt
+    size_hint_y: None
+    height: dp(150)
+
+    ScrollView:
+        always_overscroll: False
+        effect_cls: SE
+
+        MDBoxLayout:
+            id: box
+            adaptive_size: True
+
+            MDLabel
+                id: txt
+                adaptive_size: True
+
+
 <SemiCircle>
     canvas.before:
 
@@ -190,10 +202,12 @@ KV = """
             pos: self.pos
 
 
-<PltContent>:
+<PltContent>
+
     Widget:
         size_hint_y: None
         height: dp(40)
+
     MDTextField:
         id: txt_field
         pos_hint: {'center_x': .5, 'center_y': .5}
@@ -474,6 +488,7 @@ KV = """
                         pos_hint: {'center_x':.4, 'center_y':.5}
                         halign: 'center'
                         opacity: 0
+
                     MDSpinner:
                         id: spinner
                         size_hint: None, None
@@ -491,6 +506,8 @@ KV = """
                         elevation: 10
                         left_action_items:
                             [['menu', lambda x: nav_drawer.set_state()]]
+                        right_action_items:
+                            [['alarm', lambda x: app.open_time_picker(False)]]
 
                     MDFloatLayout:
 
@@ -520,7 +537,7 @@ KV = """
                                 app.accur.clear()
                                 app.lat_lon.clear()
                                 app.saved = False
-                                app.start(1000, 5)
+                                app.start(1000, 0)
 
                         MDFillRoundFlatIconButton:
 
@@ -562,11 +579,11 @@ KV = """
 
             Screen:
                 name: 'scr 2'
-                on_enter: mapview.center_on(\
-                                    app.loca[0], app.loca[1])\
-                                        if app.loca else None
+                on_enter:
+                    app.center_mapview(mapview)
                 id: scr2
-                zoom_on: 16
+                zoom_on: 12
+
                 RelativeLayout:
                     MapView:
                         id: mapview
@@ -597,8 +614,8 @@ KV = """
                             on_release:
                                 Clock.schedule_once(\
                                     partial(\
-                                        app.theme_color_cahnge, app.map_dialog\
-                                            ), .3\
+                                        app.open_animate_dialog,\
+                                            app.map_dialog), .3\
                                         )
 
             Screen:
@@ -632,6 +649,19 @@ KV = """
             ContentNavigationDrawer:
                 id: content_drawer
 """
+
+
+class WarnDialogContent(BoxLayout):
+    box = ObjectProperty()
+    txt = ObjectProperty()
+
+
+class ContentTimeError(FloatLayout):
+    pass
+
+
+class ContentLocationReady(FloatLayout):
+    pass
 
 
 class LayoutWidget(FloatLayout):
@@ -839,6 +869,9 @@ class CarPos(MDApp):
     map_dialog = None
     plate_dialog = None
     a_11_background_permit = None
+    automatic_ready_dialog = None
+    time_picker = None
+    time_dialog_warn = None
 
     lat_lon = []
     accur = []
@@ -864,15 +897,38 @@ class CarPos(MDApp):
     paired_car = ""
     is_car_paired = False
 
-    is_firs_time = None
+    is_first_time = None
+
+    alarm_time = ObjectProperty(allownone=True)
+
+    def on_alarm_time(self, *_):
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        time = datetime.strptime(current_time, '%H:%M:%S').time()
+        t = datetime.combine(
+            date.today(), self.alarm_time
+            ) - datetime.combine(date.today(), time)
+        print(t.seconds)
+        if t.seconds < 60 or t.seconds > 43200:
+            self.open_animate_dialog(self.time_dialog_warn, None)
+            return
+        alarm = ParkAlarmManager()
+        alarm.start(t.seconds)
+
+    def center_mapview(self, mapview):
+        mapview.center_on(app.loca[0], app.loca[1]) \
+                if app.loca[0] != 0 and app.loca[1] != 0 \
+                else mapview.center_on(52.5065133, 13.1445545)
 
     def on_new_intent(self, intent):
+        print('got it')
         cancel = intent.getStringExtra("cancel")
         if cancel == "cancel":
             self.stop_service(0, 0)
             self.start(1000, 0)
+            return
 
-        get_location = intent.getStringExtra("getLocation")
+        got_location = intent.getStringExtra("gotLocation")
         lat = intent.getStringExtra("lat")
         lon = intent.getStringExtra("lon")
 
@@ -887,7 +943,7 @@ class CarPos(MDApp):
             lat = float(lat)
             lon = float(lon)
 
-        if get_location == "true":
+        if got_location == "true":
             self.stop_service(lat, lon)
 
     def on_receive(self, context, intent):
@@ -906,13 +962,13 @@ class CarPos(MDApp):
                 notify(
                     context,
                     'CAR_LOCATOR_HEADS_UP',
-                    'Car connected press start!',
+                    'CAR CONNECTED PRESS TO START LISTEN',
                     'Location service',
                     'Car locator',
                     'Car locator service',
                     flag='update',
                     n_type='head',
-                    autocancel=True
+                    autocancel=False
                     )
 
     def unregister_broadcast_receiver(self):
@@ -950,6 +1006,7 @@ class CarPos(MDApp):
                     tertiary_text=f"longitude {lat} latitude {lon}"
                     )
             )
+        self.open_animate_dialog(self.automatic_ready_dialog, None)
 
     @mainthread
     def start_service(self, device):
@@ -981,7 +1038,6 @@ class CarPos(MDApp):
         self.root.ids.sm.transition = FallOutTransition() \
             if self.theme_cls.theme_style == 'Dark' else RiseInTransition()
 
-        self.set_decorations()
         self.root.ids.sm.current = 'scr 1'
 
         self.root.ids.sm.transition = SlideTransition()
@@ -992,8 +1048,8 @@ class CarPos(MDApp):
         PackageManager.getBackgroundPermissionOptionLabel()
 
     def check_background(self, *_):
-
-        if self.permit:
+        # return True
+        if self.permit and BuildVersion.SDK_INT >= 29:
 
             if ContextCompat.checkSelfPermission(
                     mActivity.getApplicationContext(),
@@ -1019,19 +1075,18 @@ class CarPos(MDApp):
                             ):
                     Clock.schedule_once(
                         partial(
-                            self.theme_color_cahnge,
+                            self.open_animate_dialog,
                             self.a_11_background_permit
                             ), 0)
-                    '''show dialog explaining why is needed'''
+        else:
+            return self.request_android_permissions()
 
     def explain_need_for_backgraund(self, *_):
         if self.is_firs_time and platform == 'android':
             Clock.schedule_once(partial(
-                self.theme_color_cahnge, self.explain_dialog), 0)
+                self.open_animate_dialog, self.explain_dialog), 0)
 
     def request_android_permissions(self):
-
-        from android.permissions import request_permissions, Permission
 
         def callback(permissions, results):
 
@@ -1043,14 +1098,13 @@ class CarPos(MDApp):
                 self.permit = False
                 android_toast("This app can't work without GPS", True)
 
+            return self.permit
+
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
                              Permission.ACCESS_FINE_LOCATION], callback)
 
     def build(self):
         Window.bind(on_keyboard=self.back_key_handler)
-
-        if platform == "android":
-            self.request_android_permissions()
         Builder.load_string(KV)
         self.root = RootWidget()
 
@@ -1124,7 +1178,7 @@ class CarPos(MDApp):
                     android_toast('GPS already on', True)
             else:
                 Clock.schedule_once(
-                    partial(self.theme_color_cahnge, self.dialog), .3)
+                    partial(self.open_animate_dialog, self.dialog), .3)
 
     @mainthread
     def enable(self, _):
@@ -1296,6 +1350,7 @@ class CarPos(MDApp):
 
         Clock.schedule_once(self.animate_colors, 3)
         Clock.schedule_once(self.animate_lower_pos, 3)
+        self.set_decorations()
         # encreased to 3 seconds because of some older devices
         # need more time for loading
         Clock.schedule_once(self.first_start, 2.5)
@@ -1312,8 +1367,8 @@ class CarPos(MDApp):
         return True
 
     def on_resume(self):
-        self.get_last_location()
         self.register_broadcats_receiver()
+        Clock.schedule_once(self.get_last_location, .1)
 
     def on_stop(self, *_):
         try:
@@ -1361,14 +1416,14 @@ class CarPos(MDApp):
             return
         elif icon == 'palette':
             Clock.schedule_once(
-                partial(self.theme_color_cahnge, self.theme_dialog), .3)
+                partial(self.open_animate_dialog, self.theme_dialog), .3)
 
         elif icon == 'set-left-right':
             app.anchor = 'right' if app.anchor == 'left' else 'left'
 
         elif icon == 'car':
             Clock.schedule_once(partial(
-                self.theme_color_cahnge, self.plate_dialog), .3)
+                self.open_animate_dialog, self.plate_dialog), .3)
             # self.plate_dialog.open()
 
     def change_screen(self, screen, _):
@@ -1384,7 +1439,12 @@ class CarPos(MDApp):
         args[1].overlay_color = [0, 0, 0, 0]
         args[1].dismiss()
 
-    def theme_color_cahnge(self, dialog, _):
+        if args[1].title == "Location permissions" and platform == 'android':
+            self.is_first_time = False
+            Clock.schedule_once(self.save_theme, 0)
+            self.request_android_permissions()
+
+    def open_animate_dialog(self, dialog, _):
 
         dialog.open()
         a = Animation(_scale_x=1, _scale_y=1, d=.75, t='out_bounce')
@@ -1518,17 +1578,79 @@ class CarPos(MDApp):
                 _scale_x=0,
                 _scale_y=0,
                 title="Automatic location saving",
+                type="custom",
                 auto_dismiss=False,
-                text=background_text,
+                content_cls=WarnDialogContent(),
                 buttons=[
                     Ok(text="OK")
                 ]
             )
+            self.a_11_background_permit.content_cls.txt.text = background_text
 
-    def get_last_location(self):
-        with open(
-            'locations/loc.json', 'r'
-        ) as f:
+        if not self.time_picker:
+            self.time_picker = CustomTimePicker(
+                auto_dismiss=False,
+                opacity=0,
+                )
+
+        if not self.time_dialog_warn:
+            ok = MDFlatButton(text="OK")
+            self.time_dialog_warn = MDDialog(
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
+                title="Time error",
+                type="custom",
+                auto_dismiss=False,
+                content_cls=ContentTimeError(
+                    size_hint_y=None, height=dp(100)
+                    ),
+                buttons=[ok]
+            )
+            ok.bind(
+                on_release=lambda x: self.animation_dialog_helper(
+                    self.time_dialog_warn
+                    )
+                )
+
+        if not self.automatic_ready_dialog:
+            dismiss = MDFlatButton(text="DISMISS")
+            yes = MDFlatButton(text="YES")
+
+            self.automatic_ready_dialog = MDDialog(
+                overlay_color=[0, 0, 0, 0],
+                _scale_x=0,
+                _scale_y=0,
+                title="Location ready",
+                type="custom",
+                auto_dismiss=False,
+                content_cls=ContentLocationReady(
+                    size_hint_y=None, height=dp(100)
+                    ),
+                buttons=[yes, dismiss]
+            )
+            dismiss.bind(
+                on_release=lambda x: self.animation_dialog_helper(
+                    self.automatic_ready_dialog
+                    )
+                )
+            yes.bind(on_release=lambda x: self.open_time_picker())
+
+    def open_time_picker(self, close=True):
+        if close:
+            self.animation_dialog_helper(self.automatic_ready_dialog)
+        Clock.schedule_once(self.animate_time_picker, .3)
+        self.time_picker.open()
+
+    def animate_time_picker(self, *_):
+        a = Animation(opacity=1, d=.4)
+        a.start(self.time_picker)
+
+    def get_time(self, instance, time):
+        self.alarm_time = time
+
+    def get_last_location(self, *_):
+        with open('locations/loc.json', 'r') as f:
             loc = json.load(f)
         self.loca = loc['loc'][-1]
 
@@ -1545,8 +1667,8 @@ class CarPos(MDApp):
 
     def save_theme(self, *_):
         sett = {
-                "theme_style": app.theme_cls.theme_style,
-                "primary_palette": app.theme_cls.primary_palette,
+                "theme_style": self.theme_cls.theme_style,
+                "primary_palette": self.theme_cls.primary_palette,
                 "alpha": self.root.alpha,
                 "mark": self.mark_img,
                 "car": self.car_image,
@@ -1569,18 +1691,19 @@ class CarPos(MDApp):
         self.anchor = sett["drawer"]
         self.plate = sett["plate"]
         self.paired_car = sett["device"]
-        self.is_firs_time = sett["first_run"]
+        self.is_first_time = sett["first_run"]
         app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
         if sett["theme_style"] == 'Dark':
             self.root.ids.r.color = [0, 0, 0, 1]
         else:
             self.root.ids.r.color = [1, 1, 1, 1]
 
-        if self.is_firs_time and platform == 'android':
+        if self.is_first_time and platform == 'android':
             self.create_explain_dialog()
-        if not self.is_firs_time:
+        if not self.is_first_time:
             self.explain_dialog = None
-
+            if platform == 'android':
+                self.request_android_permissions()
         sett = None
 
     def create_explain_dialog(self):
@@ -1589,16 +1712,18 @@ class CarPos(MDApp):
             _scale_x=0,
             _scale_y=0,
             title="Location permissions",
+            type="custom",
             auto_dismiss=False,
-            text=first_warn_text,
+            content_cls=WarnDialogContent(),
+            # text=first_warn_text,
             buttons=[
                 Ok(text="OK")
             ]
         )
+        self.explain_dialog.content_cls.txt.text = first_warn_text
+
         Clock.schedule_once(
-            partial(self.theme_color_cahnge, self.explain_dialog), 1)
-        self.is_firs_time = False
-        Clock.schedule_once(self.save_theme, 1)
+            partial(self.open_animate_dialog, self.explain_dialog), 2)
 
     def set_decorations(self):
         if platform == "android":

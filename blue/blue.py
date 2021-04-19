@@ -45,6 +45,8 @@ class BroadcastReceiver(object):
                 #     return getattr(BluetoothAdapter, name)
                 # elif hasattr(WifiManager, name):
                 #     return getattr(WifiManager, name)
+                # elif hasattr(TelephonyManager, name):
+                #     return getattr(WifiManager, name)
                 elif hasattr(BluetoothDevice, name):
                     return getattr(BluetoothDevice, name)
                 else:
@@ -52,6 +54,7 @@ class BroadcastReceiver(object):
 
         # resolve actions/categories first
         Intent = autoclass('android.content.Intent')
+        # TelephonyManager = autoclass('android.telephony.TelephonyManager')
         # BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
         # WifiManager = autoclass('android.net.wifi.WifiManager')
         BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')

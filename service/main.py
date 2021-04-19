@@ -20,6 +20,7 @@ class KivyService:
         gps.configure(on_location=self.on_location)
         self.context = None
         self.extras = []
+        self.stopped = False
 
     def on_location(self, **kwargs):
 
@@ -28,7 +29,7 @@ class KivyService:
         self.last_coordinates = [
             str(lat), str(lon)
             ]
-        # print(f'lat: {lat}, lon: {lon}')
+        print(f'lat: {lat}, lon: {lon}')
 
     def on_receive(self, context, intent):
 
@@ -43,8 +44,10 @@ class KivyService:
         if action == BluetoothDevice.ACTION_ACL_DISCONNECTED:
             # print('started')
             if name == self.device:
-                gps.start(1000, 0)
+                print('disconected')
                 self.unregister_broadcast_receiver()
+                gps.stop()
+                self.stop_service()
 
     def unregister_broadcast_receiver(self):
         if self.br:
@@ -56,52 +59,46 @@ class KivyService:
         if not self.br:
             self.br = BroadcastReceiver(
                 self.on_receive, actions=[
-                    'ACTION_ACL_CONNECTED',
+                    # 'ACTION_ACL_CONNECTED',
                     'ACTION_ACL_DISCONNECTED'
                     ])
             self.br.start()
 
     def stop_service(self):
-
-        self.extras = [
-            [
-                'getLocation', 'true'
-                ],
-            [
-                'lat', str(self.last_coordinates[0])
-                ],
-            [
-                'lon', str(self.last_coordinates[1])
+        if not self.stopped:
+            self.stopped = True
+            self.extras = [
+                [
+                    'gotLocation', 'true'
+                    ],
+                [
+                    'lat', str(self.last_coordinates[0])
+                    ],
+                [
+                    'lon', str(self.last_coordinates[1])
+                    ]
                 ]
-            ]
-        notify(
-            context=self.context,
-            channel_id='CAR_LOCATOR',
-            text='Location ready!',
-            title='Car locator location service',
-            name='Car locator',
-            description='Car locator service',
-            extras=self.extras,
-            flag='update',
-            n_type='full',
-            autocancel=False
-            )
-        gps.stop()
-        self.connected = False
-        mService.stopSelf()
+            notify(
+                context=self.context,
+                channel_id='CAR_LOCATOR',
+                text='Location ready!',
+                title='Car locator location service',
+                name='Car locator',
+                description='Car locator service',
+                extras=self.extras,
+                flag='update',
+                n_type='full',
+                autocancel=True
+                )
+        # self.connected = False
+        # mService.stopSelf()
 
     def start(self):
-        i = 0
-
+        gps.start(1000, 0)
         self.register_broadcats_receiver()
         while self.connected:
-            i += 1
-            if i > 50:
-                print('waiting for disconnection')
-                i = 0
-            if self.last_coordinates:
-                self.stop_service()
-            sleep(.1)
+            print('waiting for disconnection')
+            sleep(1)
 
 
 if __name__ == '__main__':

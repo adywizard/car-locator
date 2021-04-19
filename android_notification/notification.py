@@ -12,6 +12,12 @@ NotificationManager = autoclass('android.app.NotificationManager')
 NotificationChannel = autoclass('android.app.NotificationChannel')
 Context = autoclass('android.content.Context')
 AndroidString = autoclass('java.lang.String')
+BuildVersion = autoclass('android.os.Build$VERSION')
+BuildVersion_CODES = autoclass('android.os.Build$VERSION_CODES')
+RingtoneManager = autoclass('android.media.RingtoneManager')
+Uri = autoclass('android.net.Uri')
+AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+AudioAttributes = autoclass('android.media.AudioAttributes')
 # Drawable = autoclass('org.locator.locator.R$drawable')
 ActionBuilder = autoclass(
     'androidx.core.app.NotificationCompat$Action$Builder'
@@ -27,7 +33,9 @@ def create_action_intent(context):
 
     pendingIntent = PendingIntent.getActivity(
         context, 321321, i, PendingIntent.FLAG_UPDATE_CURRENT)
-    title = cast('java.lang.CharSequence', AndroidString("start"))
+    title = cast(
+        'java.lang.CharSequence', AndroidString("PRESS FOR AUTOMATIC LOCATION")
+        )
 
     action = ActionBuilder(R.ic_menu_mylocation, title, pendingIntent)
 
@@ -36,6 +44,13 @@ def create_action_intent(context):
 
 def create_notification_channel(context, channel_id, name, description):
 
+    sound = cast(Uri, RingtoneManager.getDefaultUri(
+        RingtoneManager.TYPE_NOTIFICATION))
+    att = AudioAttributesBuilder()
+    att.setUsage(AudioAttributes.USAGE_NOTIFICATION)
+    att.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+    att = cast(AudioAttributes, att.build())
+
     name = cast('java.lang.CharSequence', AndroidString(name))
     description = AndroidString(description)
     channel_id = AndroidString(channel_id)
@@ -43,6 +58,9 @@ def create_notification_channel(context, channel_id, name, description):
     importance = NotificationManager.IMPORTANCE_HIGH
     channel = NotificationChannel(channel_id, name, importance)
     channel.setDescription(description)
+    channel.enableLights(True)
+    channel.enableVibration(True)
+    channel.setSound(sound, att)
     notificationManager = context.getSystemService(NotificationManager)
     notificationManager.createNotificationChannel(channel)
 
@@ -53,7 +71,12 @@ def notify(
         description='', extras=[],
         flag='update', n_type='full', autocancel=False):
 
-    create_notification_channel(context, channel_id, name, description)
+    sound = cast(Uri, RingtoneManager.getDefaultUri(
+        RingtoneManager.TYPE_NOTIFICATION))
+
+    if BuildVersion.SDK_INT >= BuildVersion_CODES.O:
+
+        create_notification_channel(context, channel_id, name, description)
 
     if channel_id == 'CAR_LOCATOR':
         ID = 123123
@@ -92,6 +115,7 @@ def notify(
     builder.setSmallIcon(context.getApplicationInfo().icon)
     builder.setContentTitle(title)
     builder.setContentText(text)
+    builder.setSound(sound)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
@@ -102,7 +126,7 @@ def notify(
         builder.setFullScreenIntent(pendingIntent, True)
     elif n_type == 'head':
         builder.setContentIntent(pendingIntent)
-        builder.setVibrate([0])
+        builder.setVibrate([0, 300, 0, 400, 0, 500])
         builder.addAction(action)
 
     notification = builder.build()

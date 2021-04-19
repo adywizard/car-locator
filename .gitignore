@@ -1,3 +1,7 @@
 .buildozer/
 cache/
 blue_devices_screen/__pycache__/devices.cpython-38.pyc
+time_picker/__pycache__/picker.cpython-38.pyc
+dep.txt
+constants/__pycache__/texts.cpython-38.pyc
+alarm_manager/__pycache__/alarm.cpython-38.pyc
