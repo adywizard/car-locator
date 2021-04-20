@@ -19,8 +19,6 @@ from kivymd.uix.list import MDList, OneLineIconListItem
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.list import OneLineAvatarIconListItem
-# from kivymd.uix.picker import MDTimePicker
-
 
 from kivy.properties import StringProperty, ListProperty,\
     ObjectProperty, NumericProperty, ColorProperty
@@ -120,22 +118,22 @@ KV = """
         text: 'Can be more then 12h or less then 1 minute'
 
 <WarnDialogContent>
-    box: box
     txt: txt
     size_hint_y: None
     height: dp(150)
 
     ScrollView:
-        always_overscroll: False
         effect_cls: SE
+        do_scroll_x: False
+        do_scroll_y: True
 
-        MDBoxLayout:
-            id: box
-            adaptive_size: True
-
-            MDLabel
-                id: txt
-                adaptive_size: True
+        MDLabel:
+            id: txt
+            halign: 'left'
+            size_hint_y: None
+            height: self.texture_size[1]
+            text_size: self.width, None
+            padding: 10, 10
 
 
 <SemiCircle>
@@ -601,7 +599,6 @@ KV = """
 
 
 class WarnDialogContent(BoxLayout):
-    box = ObjectProperty()
     txt = ObjectProperty()
 
 

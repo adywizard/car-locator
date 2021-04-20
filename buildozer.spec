@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf,db,txt,jpeg,json
 #source.include_patterns = assets/*,images/*.png
 
 # (list) Source files to exclude (let empty to not exclude anything)
-source.exclude_exts = spec, md
+source.exclude_exts = spec, md, txt
 
 # (list) List of directory to exclude (let empty to not exclude anything)
 source.exclude_dirs = tests, bin, venv, old_builds, icons, gifs
