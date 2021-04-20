@@ -1048,7 +1048,7 @@ class CarPos(MDApp):
         PackageManager.getBackgroundPermissionOptionLabel()
 
     def check_background(self, *_):
-        # return True
+
         if self.permit and BuildVersion.SDK_INT >= 29:
 
             if ContextCompat.checkSelfPermission(
@@ -1078,8 +1078,8 @@ class CarPos(MDApp):
                             self.open_animate_dialog,
                             self.a_11_background_permit
                             ), 0)
-        else:
-            return self.request_android_permissions()
+
+        return True
 
     def explain_need_for_backgraund(self, *_):
         if self.is_firs_time and platform == 'android':
