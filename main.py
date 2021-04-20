@@ -49,23 +49,9 @@ from kivy.metrics import dp
 
 from time_picker.picker import CustomTimePicker
 from constants.texts import first_warn_text, background_text
-
-
-BUBBLE_COLORS = [
-    [214/255, 131/255, 54/255, 1],
-    [56/255, 126/255, 217/255, 1],
-    [119/255, 93/255, 186/255, 1],
-    [207/255, 64/255, 142/255, 1],
-    [83/255, 194/255, 111/255, 1],
-    [235/255, 217/255, 138/255, 1],
-    [131/255, 138/255, 242/255, 1],
-    [182/255, 40/255, 247/255, 1],
-    [79/255, 247/255, 180/255, 1],
-    [176255, 181/255, 80/255, 1],
-    [67/255, 57/255, 145/255, 1]
-    ]
-
-URL = "https://www.google.com/maps/search/@"
+from constants.colors import BUBBLE_COLORS
+from constants.urls import URL, MAIL
+from opengl_shader.bubbleshader import shader_watter_bubble
 
 
 if platform == 'android':
@@ -108,43 +94,6 @@ else:
 
     def run_on_ui_thread(*args, **kwargs):
         return
-
-
-MAIL = "developer.mail@here.com"
-
-
-header = '''
-$HEADER$
-uniform vec2 resolution;
-uniform float time;
-uniform vec2 mouse;
-'''
-
-
-shader_watter_bubble = header + '''
-void main(void)
-{
-    vec2 halfres = resolution.xy / 2.0;
-    vec2 cpos = vec4(frag_modelview_mat * gl_FragCoord).xy;
-
-    vec2 sinres = vec2(tan(resolution.x * time), -sin(resolution * time));
-
-    cpos.x -= 0.5 * halfres.x * sin(time/2.0) + \
-        0.3 * halfres.x * cos(time) + halfres.x;
-
-    cpos.y -= 0.5 * halfres.y * sin(time/5.0) + \
-        0.3 * halfres.y * sin(time) + halfres.y;
-
-    float cLength = length(cpos);
-
-    vec2 uv = \
-        tex_coord0 + (cpos / cLength) * \
-            sin(cLength / 50.0 - time * 2.0) / 15.0;
-
-    vec3 col = texture2D(texture0, uv).xyz;
-    gl_FragColor = vec4(col, 1.0);
-}
-'''
 
 
 KV = """
@@ -902,16 +851,18 @@ class CarPos(MDApp):
     alarm_time = ObjectProperty(allownone=True)
 
     def on_alarm_time(self, *_):
+
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         time = datetime.strptime(current_time, '%H:%M:%S').time()
         t = datetime.combine(
             date.today(), self.alarm_time
             ) - datetime.combine(date.today(), time)
-        print(t.seconds)
+
         if t.seconds < 60 or t.seconds > 43200:
             self.open_animate_dialog(self.time_dialog_warn, None)
             return
+
         alarm = ParkAlarmManager()
         alarm.start(t.seconds)
 

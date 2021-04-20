@@ -6,7 +6,6 @@ from kivymd.uix.list import MDList
 from kivymd.uix.toolbar import MDToolbar
 from kivymd.uix.button import MDFloatingActionButton
 from kivymd.app import MDApp
-# from kivymd.toast import toast
 
 from kivy.utils import platform, get_hex_from_color
 from kivy.uix.boxlayout import BoxLayout
@@ -16,29 +15,17 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.metrics import dp
 
-# from functools import partial
-
-# from kivymd.icon_definitions import md_icons
-
-COLORS = [
-    [153/255, 69/255, 255/255, 1],
-    [187/255, 100/255, 217/255, 1],
-    [255/255, 69/255, 150/255, 1],
-    [255/255, 69/255, 69/255, 1],
-    [100/255, 160/255, 217/255, 1],
-    [255/255, 115/255, 69/255, 1],
-    [217/255, 100/255, 166/255, 1]
-]
+from constants.colors import DECORATION_COLORS
 
 
 if platform == 'android':
     from jnius import autoclass
+    from android_toast.toast import android_toast
 
     BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
     Intent = autoclass('android.content.Intent')
     mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
-    from android_toast.toast import android_toast
     ContextCompat = autoclass('androidx.core.content.ContextCompat')
     Manifest = autoclass('android.Manifest$permission')
     PackageManager = autoclass('android.content.pm.PackageManager')
@@ -185,7 +172,7 @@ class BlueDevicesScreen(MDScreen):
             self.app.statusbar(statusbar, navbar)
 
     def animate_button_colors(self, *_):
-        self.choosen_color = choice(COLORS)
+        self.choosen_color = choice(DECORATION_COLORS)
         a = Animation(md_bg_color=self.choosen_color, d=.3)
         b = Animation(md_bg_color=self.choosen_color, d=.3)
         a.bind(on_start=self.change_decorations)

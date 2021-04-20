@@ -4,7 +4,7 @@
 
 #### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-#### This app was tested on Android 11 on Xiaomi mi 10 phone and on Android 9 OnePlus 5t phone.
+#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone Motorola Edge Android 10, Huawei Honor 9 Android 9.
 
 
 ## Version 0.1.3
@@ -31,20 +31,38 @@ Added shader animation instead of simple circles and lottie animation instead of
 
 If you want to build this app (last version) your self, you'll have to set p4a = develop in buildozer.spec if it crash after compilation is due to https://github.com/kivy/kivy/issues/7398 and likely you'll have to add lottie support to your project at your own.
 
+In gradle tamlate should be added androidx support.
+
+```
+ext {
+    useAndroidX=true
+    enableJetifier=true
+}
+```
+
 Also there's some manipulation of the Java code involved:
 
 Inside onCreate method of the PythonActivity.java this needs to be added
 
 ```
-setShowWhenLocked(true);
-setTurnScreenOn(true);
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        }
+else {                
+    this.getWindow().addFlags(
+        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+        );
+}
 ```
 
 should look like this:
 
 ```java
 
-protected void onCreate(Bundle savedInstanceState) {
+@Override
+    protected void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "PythonActivity onCreate running");
         resourceManager = new ResourceManager(this);
 
@@ -56,9 +74,16 @@ protected void onCreate(Bundle savedInstanceState) {
 
         this.showLoadingScreen(this.getLoadingScreen());
 
-        setShowWhenLocked(true);
-        setTurnScreenOn(true);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        }
+        else {                
+            this.getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                );
+        }
         new UnpackFilesTask().execute(getAppRoot());
 
     }
