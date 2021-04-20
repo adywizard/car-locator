@@ -9,7 +9,17 @@
 
 ## Version 0.1.3
 
-Added more animations and cleaned all unnecessary files from build, added automatic location saving.
+Added more animations and cleaned all unnecessary files from build, added automatic location saving, 
+
+and automatic parking alarm. **Do not rely to much on those two new features**, on newer versions of Android,
+
+alarms are not very precise depending on how much vendor try to optimize the battery life, on some devices 
+
+exact alarm might work without issues as well as being fiered after 3 houres delay on some other brands. 
+
+Also gadering location in the background isn't very reliable as android constantly tries to trottle
+
+location access which is easily visible while debugging with background location on.
 
 
 
