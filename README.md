@@ -4,20 +4,22 @@
 
 #### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone Motorola Edge Android 10, Huawei Honor 9 Android 9.
+#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge Android 10, Huawei Honor 9 Android 9.
 
 
 ## Version 0.1.3
 
-Added more animations and cleaned all unnecessary files from build, added automatic location saving, 
+Added more animations and cleaned all unnecessary files from build, added automatic location saving after
 
-and automatic parking alarm. **Do not rely to much on those two new features**, on newer versions of Android,
+bluetooth disconnection with choosen device, and automatic parking alarm reminder.
+
+ ***Do not rely to much on those two new features***, on newer versions of Android,
 
 alarms are not very precise depending on how much vendor try to optimize the battery life, on some devices 
 
-exact alarm might work without issues as well as being fiered after 3 houres delay on some other brands. 
+exact alarm might work without issues as well as being fiered delayed after 3 houres on some other brands. 
 
-Also gadering location in the background isn't very reliable as android constantly tries to trottle
+Also gathering location in the background isn't very reliable as android constantly tries to trottle
 
 location access which is easily visible while debugging with background location on.
 
