@@ -454,7 +454,8 @@ KV = """
                         left_action_items:
                             [['menu', lambda x: nav_drawer.set_state()]]
                         right_action_items:
-                            [['alarm', lambda x: app.open_time_picker(False)]]
+                            [['parking',\
+                                lambda x: app.open_time_picker(False)]]
 
                     MDFloatLayout:
 

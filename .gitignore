@@ -5,3 +5,6 @@ time_picker/__pycache__/picker.cpython-38.pyc
 dep.txt
 constants/__pycache__/texts.cpython-38.pyc
 alarm_manager/__pycache__/alarm.cpython-38.pyc
+constants/__pycache__/urls.cpython-38.pyc
+constants/__pycache__/colors.cpython-38.pyc
+opengl_shader/__pycache__/bubbleshader.cpython-38.pyc

@@ -4,23 +4,18 @@
 
 #### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge Android 10, Huawei Honor 9 Android 9.
+#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge Android 10, Huawei Honor 9 Android 9 and will not work below android verion 8 as it uses androidx as a dependency.
 
 
 ## Version 0.1.3
 
 Added more animations and cleaned all unnecessary files from build, added automatic location saving after
-
 bluetooth disconnection with choosen device, and automatic parking alarm reminder.
-
  ***Do not rely to much on those two new features***, on newer versions of Android,
-
 alarms are not very precise depending on how much vendor try to optimize the battery life, on some devices 
+exact alarm might work without issues as well as being fiered after 3 houres on some other brands. 
 
-exact alarm might work without issues as well as being fiered delayed after 3 houres on some other brands. 
-
-Also gathering location in the background isn't very reliable as android constantly tries to trottle
-
+Also gathering location in the background isn't very reliable when screen is off as android constantly tries to trottle
 location access which is easily visible while debugging with background location on.
 
 
@@ -74,31 +69,31 @@ should look like this:
 ```java
 
 @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.v(TAG, "PythonActivity onCreate running");
-        resourceManager = new ResourceManager(this);
+protected void onCreate(Bundle savedInstanceState) {
+    Log.v(TAG, "PythonActivity onCreate running");
+    resourceManager = new ResourceManager(this);
 
-        Log.v(TAG, "About to do super onCreate");
-        super.onCreate(savedInstanceState);
-        Log.v(TAG, "Did super onCreate");
+    Log.v(TAG, "About to do super onCreate");
+    super.onCreate(savedInstanceState);
+    Log.v(TAG, "Did super onCreate");
 
-        this.mActivity = this;
+    this.mActivity = this;
 
-        this.showLoadingScreen(this.getLoadingScreen());
+    this.showLoadingScreen(this.getLoadingScreen());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setShowWhenLocked(true);
-            setTurnScreenOn(true);
-        }
-        else {                
-            this.getWindow().addFlags(
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                );
-        }
-        new UnpackFilesTask().execute(getAppRoot());
-
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        setShowWhenLocked(true);
+        setTurnScreenOn(true);
     }
+    else {                
+        this.getWindow().addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            );
+    }
+    new UnpackFilesTask().execute(getAppRoot());
+
+}
 
 ```
 
