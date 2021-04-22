@@ -1,11 +1,11 @@
 {
     "theme_style": "Light",
-    "primary_palette": "Blue",
+    "primary_palette": "Indigo",
     "alpha": [
         1
     ],
-    "mark": "imgs/Blue.png",
-    "car": "imgs/Blue-car.png",
+    "mark": "imgs/Indigo.png",
+    "car": "imgs/Indigo-car.png",
     "drawer": "left",
     "plate": "your-plate-number-here",
     "device": "",

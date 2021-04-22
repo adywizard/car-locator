@@ -138,7 +138,6 @@ class BlueDevicesScreen(MDScreen):
                     name = OneLineListItem(
                         text=device.getName(), opacity=0
                         )
-                    # self.number_of_devices += 1
                     name.bind(on_release=self.save_device_name)
                     self.list_of_devices.add_widget(name)
 
