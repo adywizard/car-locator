@@ -720,6 +720,8 @@ class CarPos(MDApp):
 
     def allow_scanning(self, _):
         self.saved = False
+        self.accur.clear()
+        self.lat_lon.clear()
 
     def show_banner(self):
         self.root.ids.spinner.active = True

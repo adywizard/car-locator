@@ -432,9 +432,6 @@ KV = """
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .575}
                             on_release:
-                                app.accur.clear()
-                                app.lat_lon.clear()
-                                app.saved = False
                                 app.start(1000, 0)
 
                         TiltedButton:
