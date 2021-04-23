@@ -10,7 +10,6 @@ import glob
 import json
 
 from kivymd.color_definitions import colors
-# from kivymd.uix.button import MDFillRoundFlatIconButton
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.app import MDApp
 from kivymd.uix.card import MDCardSwipe
@@ -349,6 +348,8 @@ class CarPos(MDApp):
 
     is_removing = False
 
+    is_gathering = False
+
     alarm_time = ObjectProperty(allownone=True)
 
     def on_alarm_time(self, *_):
@@ -593,7 +594,8 @@ class CarPos(MDApp):
             self.mark.lon = lon
 
     def start(self, minTime, minDistance):
-        if platform == 'android' and self.permit:
+        if platform == 'android' and self.permit and not self.is_gathering:
+            self.is_gathering = True
             self.turn_on_gps('start')
             gps.start(minTime, minDistance)
             self.show_banner()
@@ -671,6 +673,7 @@ class CarPos(MDApp):
 
         if not self.is_location_enabled():
             self.saved = False
+            self.is_gathering = False
             return
 
         idx = self.accur.index(min(self.accur))
@@ -701,6 +704,7 @@ class CarPos(MDApp):
                     tertiary_text=t_text
                     )
             )
+        
         Clock.schedule_once(self.allow_scanning, 2.5)
 
     def allow_scanning(self, _):
@@ -742,6 +746,7 @@ class CarPos(MDApp):
 
     def stop_and_save(self, *_):
         self.root.ids.spinner.active = False
+        self.is_gathering = False
         self.root.ids.b_lbl.opacity = 0
         self.root.ids.banner.opacity = 0
         self.stop()

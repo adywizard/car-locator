@@ -9,5 +9,5 @@
     "drawer": "left",
     "plate": "your-plate-number-here",
     "device": "",
-    "first_run": true
+    "first_run": false
 }

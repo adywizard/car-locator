@@ -8,3 +8,10 @@ alarm_manager/__pycache__/alarm.cpython-38.pyc
 constants/__pycache__/urls.cpython-38.pyc
 constants/__pycache__/colors.cpython-38.pyc
 opengl_shader/__pycache__/bubbleshader.cpython-38.pyc
+blue_devices_screen/__pycache__/devices.cpython-39.pyc
+constants/__pycache__/colors.cpython-39.pyc
+constants/__pycache__/texts.cpython-39.pyc
+constants/__pycache__/urls.cpython-39.pyc
+kivy_lang/__pycache__/kivy_lang.cpython-39.pyc
+opengl_shader/__pycache__/bubbleshader.cpython-39.pyc
+time_picker/__pycache__/picker.cpython-39.pyc

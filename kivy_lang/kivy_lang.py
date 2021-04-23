@@ -190,7 +190,7 @@ KV = """
             if app.theme_cls.theme_style == 'Dark'\
                 else [0, 0, 0, 1]
 
-<ItemDrawer>:
+<ItemDrawer>
     theme_text_color: "Custom"
     on_release:
         self.parent.set_color_item(icon.icon)
@@ -205,7 +205,7 @@ KV = """
         theme_text_color: "Custom"
         text_color: 0, 0, 0, 1
 
-<ContentNavigationDrawer>:
+<ContentNavigationDrawer>
     orientation: "vertical"
 
     MDFloatLayout:
