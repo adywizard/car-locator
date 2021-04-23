@@ -4,7 +4,7 @@
 
 #### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge Android 10, Huawei Honor 9 Android 9 and will not work below android verion 8 as it uses androidx as a dependency.
+#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge phone with Android 10, Huawei Honor 9 phone with Android 9 and will not work below android version 8 API 26 as it uses androidx as a dependency.
 
 
 ## Version 0.1.3
