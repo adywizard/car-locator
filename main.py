@@ -63,6 +63,7 @@ if platform == 'android':
     from android_notification.notification import notify
     from alarm_manager.alarm import ParkAlarmManager
     from android_toast.toast import android_toast
+    from android_vibrator.vibrator import AndroidVibrator
 
     Intent = autoclass('android.content.Intent')
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
@@ -352,6 +353,8 @@ class CarPos(MDApp):
 
     alarm_time = ObjectProperty(allownone=True)
 
+    vibrator = None
+
     def on_alarm_time(self, *_):
 
         now = datetime.now()
@@ -367,14 +370,22 @@ class CarPos(MDApp):
 
         alarm = ParkAlarmManager()
         alarm.start(t.seconds)
+        activity.bind(on_new_intent=self.on_alarm_intent)
 
     def center_mapview(self, mapview):
         mapview.center_on(app.loca[0], app.loca[1]) \
                 if app.loca[0] != 0 and app.loca[1] != 0 \
                 else mapview.center_on(52.5065133, 13.1445545)
 
+    def on_alarm_intent(self, intent):
+        start_alarm = intent.getBooleanExtra("startAlarm", False)
+        if start_alarm:
+            self.root.ids.sm.current = 'alarm_screen'
+            self.vibrator = AndroidVibrator()
+            self.vibrator.vibrate()
+        activity.unbind(on_new_intent=self.on_alarm_intent)
+
     def on_new_intent(self, intent):
-        print('got it')
         cancel = intent.getStringExtra("cancel")
         if cancel == "cancel":
             self.stop_service(0, 0)
@@ -704,7 +715,7 @@ class CarPos(MDApp):
                     tertiary_text=t_text
                     )
             )
-        
+
         Clock.schedule_once(self.allow_scanning, 2.5)
 
     def allow_scanning(self, _):

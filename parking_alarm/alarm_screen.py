@@ -11,7 +11,7 @@ from jnius import autoclass
 mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
 
 
-class AllarmScreen(Screen):
+class AlarmScreen(Screen):
     def __init__(self, **kw):
         self.app = MDApp.get_running_app()
         Clock.schedule_once(self.post_init, 0)
@@ -19,9 +19,10 @@ class AllarmScreen(Screen):
 
     def post_init(self, dt):
         self.btn = MDFloatingActionButton(
-            icon='chek-mark',
-            pos_hint={'center_x': .5, 'center_y': .2}
+            icon='alarm-off',
+            pos_hint={'center_x': .5, 'center_y': .1}
         )
+        self.btn.md_bg_color = self.app.theme_cls.primary_color
         self.btn.bind(on_release=self.close)
         self.image = Image(
             source=self.app.car_image,
@@ -30,6 +31,7 @@ class AllarmScreen(Screen):
             size=[200, 200]
         )
         self.add_widget(self.image)
+        self.add_widget(self.btn)
 
     def on_enter(self, *args):
         self.start_animation()
@@ -51,6 +53,9 @@ class AllarmScreen(Screen):
 
     def close(self, *_):
         self.app.root.ids.sm.current = 'scr 1'
+        if self.app.vibrator:
+            self.app.vibrator.stop()
+            self.app.vibrator = None
         Clock.schedule_once(self.move_close, .3)
 
     def move_close(self, _):

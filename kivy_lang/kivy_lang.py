@@ -7,6 +7,7 @@ KV = """
 #: import MapView kivy_garden.mapview.MapView
 #: import w kivy.core.window.Window
 #: import BlueDevicesScreen blue_devices_screen.devices.BlueDevicesScreen
+#: import AlarmScreen parking_alarm.alarm_screen.AlarmScreen
 #: import partial functools.partial
 
 
@@ -539,6 +540,10 @@ KV = """
                             id: md_list
                             padding: [0, dp(6), 0, 0]
                             spacing: dp(6)
+
+            AlarmScreen:
+                id: alarm_screen
+                name: 'alarm_screen'
 
         MDNavigationDrawer:
             id: nav_drawer

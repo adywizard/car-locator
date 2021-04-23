@@ -43,6 +43,7 @@ public class LocatorAlarmReceiver extends BroadcastReceiver{
     
     private void sendNotification(Context context) {
         Intent fullScreenIntent = new Intent(context, PythonActivity.class);
+        fullScreenIntent.putExtra("startAlarm", true);
         PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(context, 654321,
                 fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
