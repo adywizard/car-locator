@@ -2,13 +2,15 @@ from kivy.uix.screenmanager import Screen
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.animation import Animation
+from kivy.utils import platform
 
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFloatingActionButton
 
 from jnius import autoclass
 
-mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
+if platform == 'android':
+    mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
 
 
 class AlarmScreen(Screen):

@@ -25,7 +25,7 @@ from kivy.properties import StringProperty, ListProperty,\
 
 from kivy.uix.screenmanager import (
     Screen, SlideTransition,
-    FallOutTransition, RiseInTransition
+    RiseInTransition  # ,FallOutTransition
     )
 
 from kivy.lang import Builder
@@ -89,6 +89,7 @@ if platform == 'android':
     NotificationManager = autoclass('android.app.NotificationManager')
     BuildVersion = autoclass('android.os.Build$VERSION')
     BuildVersion_CODES = autoclass('android.os.Build$VERSION_CODES')
+    PowerManager = autoclass('android.os.PowerManager')
 else:
     import webbrowser
 
@@ -499,8 +500,9 @@ class CarPos(MDApp):
 
     def first_start(self, *_):
 
-        self.root.ids.sm.transition = FallOutTransition() \
-            if self.theme_cls.theme_style == 'Dark' else RiseInTransition()
+        self.root.ids.sm.transition = RiseInTransition()
+        # FallOutTransition()\
+        # if self.theme_cls.theme_style == 'Dark' else RiseInTransition()
 
         self.root.ids.sm.current = 'scr 1'
 
@@ -888,20 +890,28 @@ class CarPos(MDApp):
             if icon == 'mail':
                 Clock.schedule_once(self.contact_developer, .5)
                 return
+
             elif icon == 'walk':
                 self.open_navigation(lon, lat, mode)
                 Clock.schedule_once(partial(
                     self.open_navigation, lon, lat, mode), 0.5)
                 return True
+
             elif icon == 'share-variant':
                 Clock.schedule_once(self.helper, .5)
                 return
 
+            elif icon == 'battery':
+                Clock.schedule_once(
+                    self.allowe_opt_out_battery_optimazation, .3
+                )
+                return
+
         if icon == 'history':
-            Clock.schedule_once(partial(self.change_screen, 'scr 3'), .25)
+            Clock.schedule_once(partial(self.change_screen, 'scr 3'), .3)
             # self.root.ids.sm.current = 'scr 3'
         elif icon == 'bluetooth':
-            Clock.schedule_once(partial(self.change_screen, 'blue'), .25)
+            Clock.schedule_once(partial(self.change_screen, 'blue'), .3)
             # self.root.ids.sm.current = 'blue'
             return
         elif icon == 'palette':
@@ -945,6 +955,19 @@ class CarPos(MDApp):
         a = Animation(overlay_color=[0, 0, 0, .7], d=.15)
         # a.bind(on_complete=self.animate_overlay)
         a.start(args[1])
+
+    def allowe_opt_out_battery_optimazation(self, *_):
+        context = mActivity.getApplicationContext()
+        is_opt_out = PowerManager.isIgnoringBatteryOptimizations(
+            context.getPackageName()
+            )
+        if not is_opt_out:
+            context.startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:"+context.getPackageName())
+                    )
+                )
 
     def contact_developer(self, *largs):
 
@@ -1243,6 +1266,7 @@ class CarPos(MDApp):
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
             "car": "Set the plate",
+            'battery': "Allowe alarms",
             'bluetooth': self.paired_car if self.paired_car else 'Choose car'
         }
         for icon_name in icons_item:

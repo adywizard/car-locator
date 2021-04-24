@@ -8,6 +8,8 @@ VibrationEffect = autoclass('android.os.VibrationEffect')
 AudioAttributes = autoclass('android.media.AudioAttributes')
 AudioManager = autoclass('android.media.AudioManager')
 Context = autoclass('android.content.Context')
+AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+AudioAttributes = autoclass('android.media.AudioAttributes')
 
 
 class AndroidVibrator:
@@ -32,7 +34,12 @@ class AndroidVibrator:
             self.pattern, 0
         )
 
-        self.vibrator.vibrate(vibe)
+        att = AudioAttributesBuilder()
+        att.setUsage(AudioAttributes.USAGE_NOTIFICATION)
+        att.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+        att = cast(AudioAttributes, att.build())
+
+        self.vibrator.vibrate(vibe, att)
 
     def stop(self):
         self.vibrator.cancel()
