@@ -4,7 +4,7 @@
 
 #### This app is not meant for the desktop use even if it runs on desktop it will not produce desirable effect.
 
-#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge Android 10, Huawei Honor 9 Android 9 and will not work below android verion 8 as it uses androidx as a dependency.
+#### This app was tested on Android 11 on Xiaomi mi 10 phone, on Android 8.1 OnePlus 5t phone, Motorola Edge phone with Android 10, Huawei Honor 9 phone with Android 9 and will not work below android version 8 API 26 as it uses androidx as a dependency.
 
 
 ## Version 0.1.3
@@ -17,6 +17,8 @@ exact alarm might work without issues as well as being fiered after 3 houres on 
 
 Also gathering location in the background isn't very reliable when screen is off as android constantly tries to trottle
 location access which is easily visible while debugging with background location on.
+
+***In order to schedule exact alarms app needs REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission, this permission is already added in buildozer specs however the apk in bin folder isn't built with it, so you'll have to manually exclude this app from battery optimizations which can be easily done from settings, that will ensure correct alarm firing when parking alarm is set.***
 
 
 
