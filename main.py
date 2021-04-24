@@ -331,7 +331,7 @@ class CarPos(MDApp):
     anchor = StringProperty('left')
     w = None
     h = None
-    plate = StringProperty()
+    plate = StringProperty('')
     green = False
 
     w_count = 0
@@ -915,6 +915,17 @@ class CarPos(MDApp):
             Clock.schedule_once(partial(
                 self.open_animate_dialog, self.plate_dialog), .3)
             # self.plate_dialog.open()
+        elif icon == 'battery':
+            pass
+            # Clock.schedule_once(self.battery_optimize_opt_out, .3)
+
+    # def battery_optimize_opt_out(self, *_):
+    #     mActivity.startActivity(
+    #         Intent(
+    #             Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+    #             Uri.parse("package:"+mActivity.getPackageName())
+    #             )
+    #         )
 
     def change_screen(self, screen, _):
         self.root.ids.sm.current = screen
@@ -1243,7 +1254,8 @@ class CarPos(MDApp):
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
             "car": "Set the plate",
-            'bluetooth': self.paired_car if self.paired_car else 'Choose car'
+            'bluetooth': self.paired_car if self.paired_car else 'Choose car',
+            'battery': 'Allowe exact alarms'
         }
         for icon_name in icons_item:
             item = ItemDrawer(icon=icon_name, text=icons_item[icon_name])

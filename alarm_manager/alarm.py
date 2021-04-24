@@ -28,7 +28,9 @@ class ParkAlarmManager:
         alarmIntent.setAction("org.org.locator.ACTION_START_PARKING_ALARM")
 
         pendingIntent = PendingIntent.getBroadcast(
-            context, 181864, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            context, 181864, alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT
+            )
 
         alarm = cast(
             AlarmManager, context.getSystemService(Context.ALARM_SERVICE))
