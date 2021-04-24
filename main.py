@@ -958,14 +958,17 @@ class CarPos(MDApp):
 
     def allowe_opt_out_battery_optimazation(self, *_):
         context = mActivity.getApplicationContext()
-        is_opt_out = PowerManager.isIgnoringBatteryOptimizations(
-            context.getPackageName()
+        powerManager = cast(
+            PowerManager, context.getSystemService(Context.POWER_SERVICE)
+            )
+        is_opt_out = powerManager.isIgnoringBatteryOptimizations(
+            mActivity.getPackageName()
             )
         if not is_opt_out:
-            context.startActivity(
+            mActivity.startActivity(
                 Intent(
                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                    Uri.parse("package:"+context.getPackageName())
+                    Uri.parse("package:"+mActivity.getPackageName())
                     )
                 )
 
