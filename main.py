@@ -592,6 +592,9 @@ class CarPos(MDApp):
 
         elif self.root.ids.sm.current == 'scr 1':
             mActivity.moveTaskToBack(True)
+            mActivity.finish()
+            self.on_pause()
+            self.stop()
 
     def back_key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 in [27, 1001]:
@@ -615,7 +618,7 @@ class CarPos(MDApp):
         elif platform == 'android' and not self.permit:
             self.request_android_permissions()
 
-    def stop(self):
+    def gps_stop(self):
         if platform == 'android':
             gps.stop()
 
@@ -764,7 +767,7 @@ class CarPos(MDApp):
         self.is_gathering = False
         self.root.ids.b_lbl.opacity = 0
         self.root.ids.banner.opacity = 0
-        self.stop()
+        self.gps_stop()
         if not self.saved and self.is_location_enabled():
             android_toast("Current location saved", True)
             self.saved = True
