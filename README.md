@@ -18,7 +18,7 @@ exact alarm might work without issues as well as being fiered after 3 houres on 
 Also gathering location in the background isn't very reliable when screen is off as android constantly tries to trottle
 location access which is easily visible while debugging with background location on.
 
-***In order to schedule exact alarms app needs REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission, latest apk has it built in there's new item in the drawer "Allowe exact alarms", that will ensure correct alarm firing when parking alarm is set.***
+***In order to schedule exact alarms app needs REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission, latest apk has it built in, there's new item in the drawer "Allowe exact alarms", that will ensure correct alarm firing when parking alarm is set.***
 
 
 
