@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from kivymd.uix.picker import MDTimePicker
 from kivymd.app import MDApp
+from modified_picker.picker import MDTimePicker
+
 from kivy.animation import Animation
 
 

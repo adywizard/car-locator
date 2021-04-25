@@ -54,7 +54,7 @@ from kivy_lang.kivy_lang import KV
 
 
 if platform == 'android':
-    from jnius import autoclass, cast
+    from jnius import autoclass, cast, JavaException
     from android.runnable import run_on_ui_thread
     from android import activity
     from android.permissions import request_permissions, Permission
@@ -356,6 +356,8 @@ class CarPos(MDApp):
 
     vibrator = None
 
+    activity_alarm = False
+
     def on_alarm_time(self, *_):
 
         now = datetime.now()
@@ -371,7 +373,9 @@ class CarPos(MDApp):
 
         alarm = ParkAlarmManager()
         alarm.start(t.seconds)
-        activity.bind(on_new_intent=self.on_alarm_intent)
+        if not self.activity_alarm:
+            activity.bind(on_new_intent=self.on_alarm_intent)
+            self.activity_alarm = True
 
     def center_mapview(self, mapview):
         mapview.center_on(app.loca[0], app.loca[1]) \
@@ -381,10 +385,10 @@ class CarPos(MDApp):
     def on_alarm_intent(self, intent):
         start_alarm = intent.getBooleanExtra("startAlarm", False)
         if start_alarm:
-            self.root.ids.sm.current = 'alarm_screen'
-            self.vibrator = AndroidVibrator()
-            self.vibrator.vibrate()
-        activity.unbind(on_new_intent=self.on_alarm_intent)
+            self.show_alarm_screen(None)
+        if self.activity_alarm:
+            activity.unbind(on_new_intent=self.on_alarm_intent)
+            self.activity_alarm = False
 
     def on_new_intent(self, intent):
         cancel = intent.getStringExtra("cancel")
@@ -437,9 +441,12 @@ class CarPos(MDApp):
                     )
 
     def unregister_broadcast_receiver(self):
-        if self.br and platform == 'android':
-            self.br.stop()
-            self.br = None
+        try:
+            if self.br and platform == 'android':
+                self.br.stop()
+                self.br = None
+        except JavaException as e:
+            Logger.error(str(e))
 
     @mainthread
     def stop_service(self, lat, lon):
@@ -590,9 +597,8 @@ class CarPos(MDApp):
         elif self.root.ids.sm.current == 'blue':
             self.root.ids.sm.current = 'scr 1'
 
-        elif self.root.ids.sm.current == 'scr 1':
+        elif self.root.ids.sm.current == 'scr 1' and platform == 'android':
             mActivity.moveTaskToBack(True)
-            mActivity.finish()
             self.on_pause()
             self.stop()
 
@@ -833,6 +839,19 @@ class CarPos(MDApp):
         else:
             window.getDecorView().setSystemUiVisibility(0)
 
+    @mainthread
+    def show_alarm_screen(self, dt):
+        self.root.ids.sm.current = 'alarm_screen'
+        self.vibrator = AndroidVibrator()
+        self.vibrator.vibrate()
+
+    def get_intent(self):
+        intent = mActivity.getIntent()
+        start = intent.getBooleanExtra("startAlarm", False)
+
+        if start:
+            Clock.schedule_once(self.show_alarm_screen, 2)
+
     def on_start(self):
         self.set_theme()
         self.create_content_drawer()
@@ -849,6 +868,7 @@ class CarPos(MDApp):
         # encreased to 3 seconds because of some older devices
         # need more time for loading
         Clock.schedule_once(self.first_start, 2.5)
+        self.get_intent()
 
     def on_pause(self, *_):
 
@@ -859,10 +879,15 @@ class CarPos(MDApp):
             except OSError as e:
                 Logger.info('Chache not removed: ' + str(e))
         self.unregister_broadcast_receiver()
+
+        if self.activity_alarm:
+            activity.unbind(on_new_intent=self.on_alarm_intent)
+            self.activity_alarm = False
         return True
 
     def on_resume(self):
         self.register_broadcats_receiver()
+        self.get_intent()
         Clock.schedule_once(self.get_last_location, .1)
 
     def on_stop(self, *_):
@@ -959,14 +984,19 @@ class CarPos(MDApp):
         # a.bind(on_complete=self.animate_overlay)
         a.start(args[1])
 
-    def allowe_opt_out_battery_optimazation(self, *_):
+    def doze_opt_out(self):
+        if platform != 'android':
+            return
         context = mActivity.getApplicationContext()
         powerManager = cast(
             PowerManager, context.getSystemService(Context.POWER_SERVICE)
             )
-        is_opt_out = powerManager.isIgnoringBatteryOptimizations(
+        return powerManager.isIgnoringBatteryOptimizations(
             mActivity.getPackageName()
             )
+
+    def allowe_opt_out_battery_optimazation(self, *_):
+        is_opt_out = self.doze_opt_out()
         if not is_opt_out:
             mActivity.startActivity(
                 Intent(
@@ -1272,7 +1302,8 @@ class CarPos(MDApp):
             "theme-light-dark": "Change the style",
             "set-left-right": "Drawer to right",
             "car": "Set the plate",
-            'battery': 'Allowe exact alarms',
+            'battery': 'Allowe exact alarms'
+            if not self.doze_opt_out() else 'Exact alarms allowed',
             'bluetooth': self.paired_car if self.paired_car else 'Choose car',
         }
         for icon_name in icons_item:
