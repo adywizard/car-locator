@@ -141,6 +141,9 @@ KV = """
     on_release:
         app.animation_dialog_helper(self.parent.parent.parent.parent)
         app.hide_banner()
+        app.saved = False
+        app.is_gathering = False
+        app.root.ids.sl.disabled = False
 
 <Accept>:
     text_color: app.theme_cls.primary_color
@@ -433,6 +436,7 @@ KV = """
                             pos_hint: {'center_x': .5, 'center_y': .575}
                             on_release:
                                 self.disabled = True
+                                app.button_animation()
                                 app.start(1000, 0)
 
                         TiltedButton:

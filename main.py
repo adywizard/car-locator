@@ -379,6 +379,19 @@ class CarPos(MDApp):
 
     activity_alarm = False
 
+    def button_animation(self, *_):
+        if platform != 'android':
+            Clock.schedule_once(self.button_animation_cancel, 5)
+        ang = 8 if self.root.ids.sl.angle == -2 else -2
+        a = Animation(angle=ang, d=.7, t='out_bounce')
+        a.bind(on_complete=self.button_animation)
+        a.start(self.root.ids.sl)
+
+    def button_animation_cancel(self, *_):
+        Animation.cancel_all(self.root.ids.sl)
+        self.root.ids.sl.disabled = False
+        self.root.ids.sl.angle == -2
+
     def on_alarm_time(self, *_):
 
         now = datetime.now()
@@ -652,7 +665,7 @@ class CarPos(MDApp):
     def open_gps_settings(self, *_):
         self.turn_on_gps('start')
 
-    def is_location_enabled(self):
+    def is_location_enabled(self, *args):
         if platform != 'android':
             return
 
@@ -676,6 +689,7 @@ class CarPos(MDApp):
             else:
                 Clock.schedule_once(
                     partial(self.open_animate_dialog, self.dialog), .3)
+                Clock.schedule_once(self.safety_check, 15)
 
     @mainthread
     def enable(self, _):
@@ -712,12 +726,24 @@ class CarPos(MDApp):
         self.loca = [0, 0]
         self.remove_all_items()
 
-    def save_current_loc(self, *_):
+    def safety_check(self, *_):
+        if not self.is_location_enabled():
+            self.saved = False
+            self.is_gathering = False
+            self.hide_banner()
+            Animation.cancel_all(self.root.ids.sl)
+            self.root.ids.sl.disabled = False
+            self.root.ids.sl.angle == -2
+            return
+
+    def save_current_loc(self, *args):
 
         if not self.is_location_enabled():
             self.saved = False
             self.is_gathering = False
+            Animation.cancel_all(self.root.ids.sl)
             self.root.ids.sl.disabled = False
+            self.root.ids.sl.angle == -2
             return
 
         idx = self.accur.index(min(self.accur))
@@ -755,7 +781,9 @@ class CarPos(MDApp):
         self.saved = False
         self.accur.clear()
         self.lat_lon.clear()
+        Animation.cancel_all(self.root.ids.sl)
         self.root.ids.sl.disabled = False
+        self.root.ids.sl.angle == -2
 
     def show_banner(self):
         self.root.ids.spinner.active = True
@@ -869,6 +897,8 @@ class CarPos(MDApp):
         self.vibrator.vibrate()
 
     def get_intent(self):
+        if platform != 'android':
+            return
         intent = mActivity.getIntent()
         start = intent.getBooleanExtra("startAlarm", False)
 
