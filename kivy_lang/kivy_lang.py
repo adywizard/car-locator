@@ -31,25 +31,25 @@ KV = """
         Ellipse:
             angle_start: 0
             angle_end: 360
-            size: dp(300), dp(300)
+            size: root.ellipse_top
             pos: root.x - dp(100), root.height - dp(250)
 
         Ellipse:
             angle_start: 0
             angle_end: 360
-            size: dp(250), dp(250)
+            size: root.ellipse_bottom
             pos: root.width - dp(150), root.y - dp(100)
 
         Ellipse:
             angle_start: 0
             angle_end: 360
-            size: dp(50), dp(50)
+            size: root.ellipse_middle_bottom
             pos: root.x + dp(50), root.height / 2 - dp(100)
 
         Ellipse:
             angle_start: 0
             angle_end: 360
-            size: dp(25), dp(25)
+            size: root.ellipse_middle_top
             pos: root.width - dp(75), root.height / 2 + dp(100)
 
 
@@ -418,10 +418,10 @@ KV = """
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .75}
                             on_release:
-
                                 app.turn_on_gps()
 
                         TiltedButton:
+                            id: sl
                             angle: -2
 
                             icon: 'map-marker-plus'
@@ -432,6 +432,7 @@ KV = """
                                 + root.alpha
                             pos_hint: {'center_x': .5, 'center_y': .575}
                             on_release:
+                                self.disabled = True
                                 app.start(1000, 0)
 
                         TiltedButton:
@@ -464,11 +465,6 @@ KV = """
                             pos_hint: {'center_x': .5, 'center_y': .25}
                             on_release:
                                 sm.current = 'scr 3'
-
-                        # MDLabel:
-                        #     id: lbl
-                        #     pos_hint: {'center_x': .5, 'center_y': .2}
-                        #     halign: 'center'
 
             BlueDevicesScreen:
                 name: 'blue'

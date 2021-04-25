@@ -206,7 +206,28 @@ class ItemSettings(MDFloatLayout):
 
 
 class ChronologyScreen(Screen):
-    pass
+    ellipse_top = ListProperty([0, 0])
+    ellipse_bottom = ListProperty([0, 0])
+    ellipse_middle_bottom = ListProperty([0, 0])
+    ellipse_middle_top = ListProperty([0, 0])
+
+    def on_enter(self):
+        self.animate()
+
+    def animate(self):
+        a = Animation(
+            ellipse_top=[dp(300), dp(300)], d=.4, t='in_out_elastic'
+        )
+        a += Animation(
+            ellipse_bottom=[dp(250), dp(250)], d=.4, t='in_out_elastic'
+        )
+        a += Animation(
+            ellipse_middle_top=[dp(25), dp(25)], d=.4, t='in_out_elastic'
+        )
+        a += Animation(
+            ellipse_middle_bottom=[dp(50), dp(50)], d=.4, t='in_out_elastic'
+        )
+        a.start(self)
 
 
 class SettingsScreen(Screen):
@@ -696,6 +717,7 @@ class CarPos(MDApp):
         if not self.is_location_enabled():
             self.saved = False
             self.is_gathering = False
+            self.root.ids.sl.disabled = False
             return
 
         idx = self.accur.index(min(self.accur))
@@ -733,6 +755,7 @@ class CarPos(MDApp):
         self.saved = False
         self.accur.clear()
         self.lat_lon.clear()
+        self.root.ids.sl.disabled = False
 
     def show_banner(self):
         self.root.ids.spinner.active = True
