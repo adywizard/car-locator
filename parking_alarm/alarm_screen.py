@@ -7,10 +7,14 @@ from kivy.utils import platform
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFloatingActionButton
 
-from jnius import autoclass
-
 if platform == 'android':
+    from android_notification.notification import cancel_notification
+
+    from jnius import autoclass
+
     mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
+    NotificationManager = autoclass('android.app.NotificationManager')
+    Context = autoclass('android.content.Context')
 
 
 class AlarmScreen(Screen):
@@ -61,4 +65,5 @@ class AlarmScreen(Screen):
         Clock.schedule_once(self.move_close, .3)
 
     def move_close(self, _):
+        cancel_notification(192837)
         mActivity.moveTaskToBack(True)

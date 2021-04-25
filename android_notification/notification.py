@@ -5,6 +5,7 @@ Intent = autoclass('android.content.Intent')
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
 PythonActivity = autoclass('org.kivy.android.PythonActivity')
 mService = autoclass('org.kivy.android.PythonService').mService
+mActivity = PythonActivity.mActivity
 PendingIntent = autoclass('android.app.PendingIntent')
 NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
 Builder = autoclass('androidx.core.app.NotificationCompat$Builder')
@@ -134,3 +135,15 @@ def notify(
     systemService = context.getSystemService(Context.NOTIFICATION_SERVICE)
     notificationManager = cast(NotificationManager, systemService)
     notificationManager.notify(1111, notification)
+
+
+def cancel_notification(id=None):
+    context = mActivity.getApplicationContext()
+    notificationManager = cast(
+        NotificationManager,
+        context.getSystemService(Context.NOTIFICATION_SERVICE)
+    )
+    if id:
+        notificationManager.cancel(id)
+    else:
+        notificationManager.cancelAll()

@@ -60,7 +60,7 @@ if platform == 'android':
     from android.permissions import request_permissions, Permission
 
     from blue.blue import BroadcastReceiver
-    from android_notification.notification import notify
+    from android_notification.notification import notify, cancel_notification
     from alarm_manager.alarm import ParkAlarmManager
     from android_toast.toast import android_toast
     from android_vibrator.vibrator import AndroidVibrator
@@ -405,7 +405,7 @@ class CarPos(MDApp):
         if start == "start":
             self.start_service(self.paired_car)
             self.turn_on_gps('start')
-            NotificationManager.cancelAll()
+            cancel_notification()
             return
 
         if lat or lon:
