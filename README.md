@@ -11,12 +11,13 @@
 
 Added more animations and cleaned all unnecessary files from build, added automatic location saving after
 bluetooth disconnection with choosen device, and automatic parking alarm reminder.
- ***Do not rely to much on those two new features***, on newer versions of Android,
+ ***Do not rely too much on those two new features***, on newer versions of Android,
 alarms are not very precise depending on how much vendor try to optimize the battery life, on some devices 
-exact alarm might work without issues as well as being fiered after 3 houres on some other brands. 
+exact alarm might work without issues as well as being fiered after 3 hours on some other brands, there's an option which exclude this app from battery optimizations if granted, app can fire exact alarms at any given time.
+
 
 Also gathering location in the background isn't very reliable when screen is off as android constantly tries to trottle
-location access which is easily visible while debugging with background location on.
+location access which is easily visible while debugging with background location on, so the best option is to have screen on
 
 ***In order to schedule exact alarms app needs REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission, latest apk has it built in, there's new item in the drawer "Allowe exact alarms", that will ensure correct alarm firing when parking alarm is set.***
 
