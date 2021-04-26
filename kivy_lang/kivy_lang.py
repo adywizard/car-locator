@@ -106,6 +106,9 @@ KV = """
     MDTextField:
         id: txt_field
         pos_hint: {'center_x': .5, 'center_y': .5}
+        on_focus:
+            app.regain_focus() if not self.focus else None
+            # FIX for SDLActivity window loses focus
 
 <ColorMark>
     source: app.mark_img

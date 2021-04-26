@@ -2447,6 +2447,9 @@ class TimeInputTextField(MDTextField):
 
     def on_focus(self, *args):
         super().on_focus(*args)
+        if not self.focus:
+            app = MDApp.get_running_app()
+            app.regain_focus()
         self.on_text()
 
     def on_select(self, *args):

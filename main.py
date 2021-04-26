@@ -379,6 +379,12 @@ class CarPos(MDApp):
 
     activity_alarm = False
 
+    @run_on_ui_thread
+    def regain_focus(self):
+        mActivity.onWindowFocusChanged(False)
+        mActivity.onWindowFocusChanged(True)
+        # FIX for SDLActivity window loses focus
+
     def button_animation(self, *_):
         if platform != 'android':
             Clock.schedule_once(self.button_animation_cancel, 5)
