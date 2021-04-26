@@ -12,7 +12,7 @@
 Added more animations and cleaned all unnecessary files from build, added automatic location saving after
 bluetooth disconnection with choosen device, and automatic parking alarm reminder.
  ***Do not rely to much on those two new features***, on newer versions of Android,
-alarms are not very precise depending on how much vendor try to optimize the battery life, on some devices 
+alarms are not very precise depending on how much vendor try too optimize the battery life, on some devices 
 exact alarm might work without issues as well as being fiered after 3 houres on some other brands. 
 
 Also gathering location in the background isn't very reliable when screen is off as android constantly tries to trottle
