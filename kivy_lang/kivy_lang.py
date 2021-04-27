@@ -152,7 +152,7 @@ KV = """
     text_color: app.theme_cls.primary_color
     on_release:
         app.animation_dialog_helper(self.parent.parent.parent.parent)
-        Clock.schedule_once(app.enable, .5)
+        Clock.schedule_once(app.enable, 1)
 
 <Ok>
     text_color: app.theme_cls.primary_color
@@ -227,6 +227,7 @@ KV = """
             pos_hint: {'center_x': .15, 'center_y': .5}
 
         MDLabel:
+            id: plate_number
             text: app.plate
             halign: 'center'
             theme_text_color: 'Custom'

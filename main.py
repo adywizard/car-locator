@@ -90,6 +90,7 @@ if platform == 'android':
     BuildVersion = autoclass('android.os.Build$VERSION')
     BuildVersion_CODES = autoclass('android.os.Build$VERSION_CODES')
     PowerManager = autoclass('android.os.PowerManager')
+    Configuration = autoclass('android.content.res.Configuration')
 else:
     import webbrowser
 
@@ -555,6 +556,7 @@ class CarPos(MDApp):
 
         self.root.ids.sm.transition = SlideTransition()
         self.root.ids.sm.transition.direction = 'up'
+        self.set_decorations()
 
     def get_background_permission_option_label(self):
         '''this is yet to be implemented with newer API'''
@@ -622,7 +624,9 @@ class CarPos(MDApp):
         self.root = RootWidget()
 
     def set_plate_number(self):
-        self.plate = self.plate_dialog.content_cls.ids.txt_field.text
+        if self.plate_dialog.content_cls.ids.txt_field.text:
+            self.plate = self.plate_dialog.content_cls.ids.txt_field.text
+            # Clock.schedule_once(self.save_theme, .05)
 
     def handle_screens(self):
 
@@ -911,26 +915,32 @@ class CarPos(MDApp):
         if start:
             Clock.schedule_once(self.show_alarm_screen, 2)
 
+    def is_dark_theme_on(self):
+        return (
+            mActivity.getResources().getConfiguration().uiMode
+            & Configuration.UI_MODE_NIGHT_MASK
+            ) == Configuration.UI_MODE_NIGHT_YES
+
     def on_start(self):
+        self.dark_on = self.is_dark_theme_on()
         self.set_theme()
         self.create_content_drawer()
         self.create_dialogs()
         self.get_last_location()
         self.create_history()
         self.configure_gps()
-
+        # self.set_decorations()
         self.register_broadcats_receiver()
 
         Clock.schedule_once(self.animate_colors, 3)
         Clock.schedule_once(self.animate_lower_pos, 3)
-        self.set_decorations()
         # encreased to 3 seconds because of some older devices
         # need more time for loading
-        Clock.schedule_once(self.first_start, 2.5)
+        Clock.schedule_once(self.first_start, 2.25)
         self.get_intent()
 
     def on_pause(self, *_):
-
+        self.save_theme()
         files = glob.glob('/cache/*.png')
         for f in files:
             try:
@@ -1292,6 +1302,7 @@ class CarPos(MDApp):
         with open('settings/sett.json') as f:
             sett = json.load(f)
         self.theme_cls.theme_style = sett["theme_style"]
+        # if not self.dark_on else 'Dark'
         self.theme_cls.primary_palette = sett["primary_palette"]
         self.root.alpha = sett["alpha"]
         self.mark_img = sett["mark"]
@@ -1301,7 +1312,7 @@ class CarPos(MDApp):
         self.paired_car = sett["device"]
         self.is_first_time = sett["first_run"]
         app.root.ids.content_drawer.md_bg_color = [1, 1, 1, 1]
-        if sett["theme_style"] == 'Dark':
+        if self.theme_cls.theme_style == 'Dark':
             self.root.ids.r.color = [0, 0, 0, 1]
         else:
             self.root.ids.r.color = [1, 1, 1, 1]
