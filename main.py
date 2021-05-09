@@ -556,7 +556,6 @@ class CarPos(MDApp):
 
         self.root.ids.sm.transition = SlideTransition()
         self.root.ids.sm.transition.direction = 'up'
-        self.set_decorations()
 
     def get_background_permission_option_label(self):
         '''this is yet to be implemented with newer API'''
@@ -936,7 +935,8 @@ class CarPos(MDApp):
         Clock.schedule_once(self.animate_lower_pos, 3)
         # encreased to 3 seconds because of some older devices
         # need more time for loading
-        Clock.schedule_once(self.first_start, 2.25)
+        Clock.schedule_once(self.first_start, 2.75)
+        self.set_decorations()
         self.get_intent()
 
     def on_pause(self, *_):

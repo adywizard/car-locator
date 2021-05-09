@@ -148,6 +148,20 @@ it looks like this:
 
 ```
 
+also 
+
+```
+<receiver
+    android:name="org.org.locator.LocatorAlarmReceiver"
+    android:enabled="true"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="org.org.locator.ACTION_START_PARKING_ALARM" />
+    </intent-filter>
+</receiver>
+
+```
+
 If you want to build previus version of the app just rename main.py to something else and main_with_circle_animation.py from old_builds folder to main.py
 then buildozer android build.
 
