@@ -18,11 +18,11 @@ class ParkAlarmManager:
     def start(self, time):
         self.create_alarm(time)
 
-    def create_alarm(self, secondes):
+    def create_alarm(self, seconds):
 
         context = mActivity.getApplicationContext()
 
-        alarmSetTime = int(round(time() * 1000)) + 1000 * secondes
+        alarmSetTime = int(round(time() * 1000)) + 1000 * seconds
         alarmIntent = Intent()
         alarmIntent.setClass(context, LocatorAlarmReceiver)
         alarmIntent.setAction("org.org.locator.ACTION_START_PARKING_ALARM")
